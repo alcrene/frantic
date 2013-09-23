@@ -1,0 +1,45 @@
+#ifndef INFO2D_H
+#define INFO2D_H
+
+#include <QVector>
+#include <QString>
+#include <string>
+
+#include "solvers/solver.h"
+
+/* TODO :
+ *   - Constructor to set default value for plotdata?, plotformat
+ */
+
+class info2D
+/* Class for preparing and aggregating a single set of information to be presented,
+ * usually in a plot.
+ * Could contain 'template' functions, which set many format parameters at once.
+ */
+
+{
+ private:
+  struct cls_plotdata {
+	QVector<double> xdata;
+	QVector<double> ydata;
+	QVector<double> xerr;
+	QVector<double> yerr;
+  };
+
+  struct cls_plotformat {
+	std::string color;
+	std::string style;
+  };
+
+ public:
+  info2D();
+  //void setDataFromSolver(solver )
+  
+  cls_plotdata plotdata;
+  QString xlabel;
+  QString ylabel;
+  QString name;      // Internal reference name
+  
+};
+
+#endif // INFO2D_H
