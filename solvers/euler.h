@@ -1,4 +1,4 @@
-/* 4th order Runge-Kutta ODE solver
+/* Basic ODE solver using an Euler-scheme
  */
 
 #ifndef EULER_H
@@ -14,7 +14,9 @@ template <typename Functor, typename XVector>
 class euler : public Solver<Functor, XVector>
 {
 public:
-    euler<Functor, XVector>(odeDef* ODE):Solver<Functor, XVector>(ODE) {}
+    euler<Functor, XVector>() {
+        this->noiseShape = ODETypes::NOISE_NONE;
+    }
     virtual ~euler() {}
     void solve();
 

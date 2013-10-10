@@ -19,22 +19,27 @@
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/StdVector>
 
+#include "odetypes.h"
 #include "odedef.h"
+// odedef.h should be in the folder of whatever project is being worked on
+// It defines the specifics of the problem
+// It is included here in this hackish way to minimize function lookups and maximize
+// compiled efficiency, since it contains the ode evaluation function(s)
+
+// The consequence of this is that odedef.h cannot itself include any class derived from solver.h
 
 using std::vector;
 using namespace::Eigen;
 
 namespace solvers {
+
   /* XVector should be a class derived from Eigen/Matrix */
   template <typename Functor, typename XVector> class Solver
   {
   public:
     typedef vector<XVector, aligned_allocator<XVector> > TXSeries;
 
-    //solver(int XDimension);
-    Solver(odeDef* ODE):ode(ODE) {
-      // XDim = XVector::RowsAtCompileTime;
-      dX = ode->dX;
+    Solver() {
       std::cerr << "Creating 'Solver'" << std::endl;
     }
     Solver(const Solver& source) = delete;
@@ -45,6 +50,23 @@ namespace solvers {
     virtual ~Solver() {
       std::cerr << "Deleting 'Solver'" << std::endl;
     }
+
+    /* Link the ODE instance to the solver instance.
+     */
+    void setODE(odeDef* ODE) {
+
+        ode = ODE;
+        dX = ode->dX;
+
+        // Check that the format of the ode corresponds to what the solver expects.
+        // If the format can be adapted by discarding part of the ODE (eg. noise component), emit a warning
+        if ((noiseShape == ODETypes::NOISE_NONE) and (ode->g_shape != ODETypes::NOISE_NONE)) {
+            std::cerr << "Solver is not stochastic. Only the deterministic component of the ODE will be considered." << std::endl;
+        } else {
+            assert(noiseShape == ode->g_shape);
+        }
+    }
+
 
     /* setRange functions set tBegin, tEnd, tStepsize and tNumsteps to
      * compatible values for use by discretize() */
@@ -75,10 +97,11 @@ namespace solvers {
     double tBegin = 0;
     double tEnd = 0;                 // functions can check these are set by testing tBegin == tEnd
     double tStepSize = 0;            // either StepSize or NumSteps should be computed internally
-    unsigned tNumSteps = 0;
+    unsigned long tNumSteps = 0;
     //double initX;                  // If I decide to use this, use 'x0' instead
     // int XDim;                     // Probably should be removed
     bool initConditionsSet = false;
+    ODETypes::NOISE_SHAPE noiseShape;
 
     void discretize();
     odeDef* ode;

@@ -17,11 +17,11 @@ namespace solvers {
 	{
 	public:
     // This constructor is required; call does not automatically resolve to the templated parent constructor
-    Dummy<Functor, XVector> (odeDef* ODE):Solver<Functor, XVector>(ODE) {
+    Dummy<Functor, XVector>() {
         std::cout << "Creating 'Dummy'" << std::endl;
     }
       virtual ~Dummy(){
-        cerr << "Deleting 'Dummy'" << endl;
+        std::cerr << "Deleting 'Dummy'" << std::endl;
       }
 
 	  void solve();

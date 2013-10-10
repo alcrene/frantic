@@ -23,10 +23,10 @@ template <typename Functor, typename XVector> void RK4<Functor, XVector>::solve(
   series_x[0] = ode->x0;
 
   for(i=0; i < this->tNumSteps - 1; ++i) {
-    k1 = tStepSize * this->dX(series_x[i], i*tStepSize);
-    k2 = tStepSize * this->dX(series_x[i] + k1/2, (i + 0.5)*tStepSize);
-    k3 = tStepSize * this->dX(series_x[i] + k2/2, (i + 0.5)*tStepSize);
-    k4 = tStepSize * this->dX(series_x[i] + k3, (i + 1)*tStepSize);
+    k1 = tStepSize * ode->dX.f(series_x[i], i*tStepSize);
+    k2 = tStepSize * ode->dX.f(series_x[i] + k1/2, (i + 0.5)*tStepSize);
+    k3 = tStepSize * ode->dX.f(series_x[i] + k2/2, (i + 0.5)*tStepSize);
+    k4 = tStepSize * ode->dX.f(series_x[i] + k3, (i + 1)*tStepSize);
     series_x[i+1] = series_x[i] + (k1 + 2*k2 + 2*k3 + k4)/6;
   }
 }

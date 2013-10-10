@@ -21,7 +21,7 @@ template <typename Functor, typename XVector> void euler<Functor, XVector>::solv
   series_x[0] = ode->x0;
 
   for(i=0; i < this->tNumSteps - 1; ++i) {
-      series_x[i+1] = series_x[i] + this->dX(series_x[i],i*tStepSize);
+      series_x[i+1] = series_x[i] + ode->dX.f(series_x[i],i*tStepSize) * tStepSize;
   }
 }
 

@@ -11,16 +11,22 @@ template <class Functor, class XVector> vector<double> Solver<Functor, XVector>:
 
     if ((stepMultiplier == 0) or (stepMultiplier == 1)) {
         return series_t;
-    } else {
-        double subStepSize = tStepSize/stepMultiplier;
+    } else if (stepMultiplier > 1) {
+        // We want to interpolate points between the time steps
+        // UNTESTED !!!
+        // double subStepSize = tStepSize/stepMultiplier;
         vector<double> subSeries_t;
         subSeries_t.reserve(stepMultiplier * tNumSteps);
-        for (int i=0; i<tNumSteps; ++i) {
-            for (int j=0; j<tNumSteps; ++j) {
-                subSeries_t.push_back(series_t[i] + j * subStepSize);
+        for (int i=0; i<series_t.size() - 1; ++i) {
+            for (int j=0; j<stepMultiplier; ++j) {
+                subSeries_t.push_back(series_t[i] * (1 - j/stepMultiplier) + series_t[i+1] * j / stepMultiplier);
             }
         }
+        subSeries_t.push_back(series_t[series_t.size()-1]);  // Add the last element separately, because we don't look beyond it
         return subSeries_t;
+    //} else {
+        // We want to reduce the number of points by a factor of stepMultiplier
+        // TODO
     }
 }
 
@@ -71,12 +77,13 @@ template <class Functor, class XVector> void Solver<Functor, XVector>::setRange(
   double remainder;
 
   assert((end != begin) and (stepSize != 0));
+  assert((end - begin) * stepSize > 0);
 
   tBegin = begin;
   tEnd = end;
   tStepSize = stepSize;
-  tNumSteps = (int) (tBegin - tEnd) / tStepSize;
-  remainder = (tBegin - tEnd) - tNumSteps*tStepSize;
+  tNumSteps = (int) abs(tBegin - tEnd) / tStepSize;
+  remainder = abs(tBegin - tEnd) - tNumSteps*tStepSize;
   if (remainder != 0) {
     tNumSteps = tNumSteps + 1;
     tStepSize = (tBegin - tEnd) / tNumSteps;
@@ -126,9 +133,9 @@ template <class Functor, class XVector> void Solver<Functor, XVector>::dump(std:
   if (vars == "x") {
       std::cout << "x" << i << ": ";
       for (auto iter = series_x.begin(); iter != series_x.end(); ++iter) {
-          std::cout << "      " << iter[i] << endl;
+          std::cout << "      " << iter[i] << std::endl;
       }
-      std::cout << endl;
+      std::cout << std::endl;
   }
 }
 
