@@ -8,6 +8,8 @@ TARGET = DEET
 TEMPLATE = lib
 CONFIG += staticlib
 
+QMAKE_CXXFLAGS += -std=c++11
+
 #DEFINES += DEET_LIBRARY
 
 SOURCES += deet.cpp \
@@ -20,8 +22,8 @@ SOURCES += deet.cpp \
     ui/dtbplot.cpp \
     ui/tab.cpp \
     solvers/euler_sttic.tpp \
+    ui/histogram.cpp
 #    solvers/stochastic.tpp
-    ui/dtbhist.cpp
 
 
 HEADERS += deet.h\
@@ -35,8 +37,8 @@ HEADERS += deet.h\
     ui/tab.h \
     solvers/euler_sttic.h \
     solvers/noise.h \
-    ui/dtbhist.h
-
+    solvers/odetypes.h \
+    ui/histogram.h
 
 unix:!symbian {
     maemo5 {
@@ -49,7 +51,7 @@ unix:!symbian {
 
 # CLHEP library components
 
-INCLUDEPATH += /home/alex/coding/include
-DEPENDPATH += /home/alex/coding/include
+INCLUDEPATH += /home/alex/local/include
+DEPENDPATH += /home/alex/local/include
 
-unix:!macx: LIBS += -L/home/alex/local/clhep/lib64 -lCLHEP-Random
+unix:!macx: LIBS += -L/home/alex/local/lib64 -lCLHEP-Random

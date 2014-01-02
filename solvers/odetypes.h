@@ -11,7 +11,7 @@ namespace ODETypes {
 // The shape of g(x,t) in the ODE definition
 enum NOISE_SHAPE {
     NOISE_NONE,       // No noise
-    NOISE_VECTOR,     // Only one random variable. i.e. noise direction is deterministic, only magitude is random
+    NOISE_VECTOR,     // Only one random variable. i.e. noise weighting is deterministic, only magitude is random
     NOISE_MATRIX      // Multiple random variables.
 };
 }
