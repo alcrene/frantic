@@ -1,6 +1,6 @@
 #include "histogram.h"
 
-/* Bin vecbtor data into nbins number of bins
+/* Bin vector data into nbins number of bins
  * The optional discardThreshold is a percentage indicated the minimum frequency we want in a bin.
  * Upper and lower bins with lower frequency will be combined into overflow bins.
  * Overflow bin frequency is not allowed to exceed the threshold frequency.
@@ -11,21 +11,21 @@ void Histogram::setSamples(const std::vector<double> &rawData, const int nbins, 
 
     // TODO: Use QwtSeriesStore instead of QVectors?
     QVector<QwtIntervalSample> bins;
-	std::forward_list<const double*> dataPtrs;
+    std::vector<const double*> dataPtrs;
     bins.reserve(nbins+2);  // +2 for two overload bins
 
     auto minmax = std::minmax_element(rawData.begin(), rawData.end());
     double min = *minmax.first;
     double max = *minmax.second;
-	std::vector<double>::size_type nDataPts = rawData.size();
+    std::vector<double>::size_type nDataPts = rawData.size();
     assert(min < max);
 
     double binWidth = (max - min)/nbins;
 
     // Create a list of pointers to the data, so that we can delete elements that have been sorted without counting over everything again
-    for(auto itr = rawData.rbegin(); itr != rawData.rend(); ++itr) {
+    for(auto itr = rawData.begin(); itr != rawData.end(); ++itr) {
         //TODO: Might increase performance if standard iterator is used; see http://stackoverflow.com/a/223405
-        dataPtrs.push_front(&(*itr));
+        dataPtrs.push_back(&(*itr));
     }
 
 	QwtIntervalSample bottomOverflowBin;
@@ -100,7 +100,7 @@ void Histogram::setSamples(const std::vector<double> &rawData, const int nbins, 
 	bins.push_back(topBin);
 	bins.push_back(topOverflowBin);
 
-    // finally add all that data to the histogramb
+    // finally add all that data to the histogram
     QwtPlotHistogram::setSamples(bins);
 }
 
@@ -108,13 +108,18 @@ void Histogram::setSamples(const std::vector<double> &rawData, const int nbins, 
 	discarding used pointers so they aren't counted again uselessly.
 	Modifies both arguments.
 */
-void Histogram::fillBin(QwtIntervalSample& bin, std::forward_list<const double*>& dataPointers) {
+void Histogram::fillBin(QwtIntervalSample& bin, std::vector<const double*>& dataPointers) {
+//  std::vector<std::vector<const double*>::iterator> itrsToDelete;
+
+  // Count all the values that fall within this bin
   for(auto itr = dataPointers.begin(); itr != dataPointers.end(); ) {
-	if (**itr < bin.interval.maxValue()) {
-	  ++bin.value;
-	  dataPointers.erase_after(itr++);
-	} else {
-	  ++itr;
-	}
+    if (bin.interval.contains(**itr)) {
+      // Increment bin value and remove from pointer list to keep from counting again
+      ++bin.value;
+      itr = dataPointers.erase(itr);
+    } else {
+      ++itr;
+    }
   }
+
 }

@@ -8,6 +8,7 @@
 #include <qwt6/qwt_plot.h>
 
 #include "ui/dtbcurve.h"
+#include "ui/histogram.h"
 
 class DtbPlot : public QwtPlot
 {
@@ -15,6 +16,7 @@ class DtbPlot : public QwtPlot
 public:
     explicit DtbPlot(QWidget *parent = 0);
     void attachCurve(DtbCurve* curve);
+    void attachHist(Histogram* histogram);
 
 private:
     std::vector<DtbCurve> m_curves;

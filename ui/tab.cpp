@@ -47,7 +47,17 @@ DtbCurve* tab::getCurve()
     return m_curves.back();
 }
 
-DtbPlot* tab::add2Dplot()
+
+Histogram* tab::addHist(const QString& title)
+{
+  Histogram* histObj = new Histogram(title);
+
+  m_histograms.push_back(histObj);
+
+  return histObj;
+}
+
+DtbPlot* tab::addPlot()
 {
     DtbPlot* plotPtr = new DtbPlot(this);
     layout->addWidget(plotPtr);

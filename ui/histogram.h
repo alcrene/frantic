@@ -26,7 +26,7 @@ public:
     void setSamples(const std::vector<double> &rawData, const int nbins, const double discardThreshold=0);
     
 private:
-    void fillBin(QwtIntervalSample& bin, std::forward_list<const double*>& dataPointers);
+    void fillBin(QwtIntervalSample& bin, std::vector<const double*>& dataPointers);
 
 signals:
     

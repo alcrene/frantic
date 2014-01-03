@@ -16,6 +16,7 @@
 #include <qwt6/qwt_plot.h>
 
 #include "dtbcurve.h"
+#include "histogram.h"
 #include "dtbplot.h"
 
 class tab : public QWidget
@@ -33,13 +34,16 @@ public:
                     std::string color="", std::string style="");   // Add a new curve object
     DtbCurve* getCurve(ptrdiff_t index);   // Get pointer to a curve object, to allow setting its properties
     DtbCurve* getCurve();
-    DtbPlot* add2Dplot();               // Add an empty plot widget to the tab.
+    Histogram* addHist(const QString& title = QString::null);                 //
+    DtbPlot* addPlot();                 // Add an empty plot widget to the tab.
 
+    
  private:
     Q_OBJECT
 
-    QVector<DtbPlot*> m_plots;
-    QVector<DtbCurve*> m_curves;
+    QVector<DtbPlot*> m_plots;          // Collection of plots
+    QVector<DtbCurve*> m_curves;        // Collection of curves that can be added to a plot
+    QVector<Histogram*> m_histograms;   // Collection of histograms that can be added to a plot
     QGridLayout* layout;
 	
 signals:
