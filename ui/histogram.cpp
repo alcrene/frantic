@@ -1,13 +1,12 @@
 #include "histogram.h"
 
-/* Bin vector data into nbins number of bins
- * The optional discardThreshold is a percentage indicated the minimum frequency we want in a bin.
+/* Bin vector data into nbins number of bins and add to the histogram using its setSamples method.
+ * The optional discardThreshold is a percentage indicating the minimum frequency we want in a bin.
  * Upper and lower bins with lower frequency will be combined into overflow bins.
  * Overflow bin frequency is not allowed to exceed the threshold frequency.
  * Binwidth is adjusted to keep the number of bins (excluding threshold) equal to nbins
- * TODO: Measure performance difference with a vector instead of forward_list (less memory) for dataPtrs
  */
-void Histogram::setSamples(const std::vector<double> &rawData, const int nbins, const double discardThreshold) {
+void Histogram::binData(const std::vector<double> &rawData, const int nbins, const double discardThreshold) {
 
     // TODO: Use QwtSeriesStore instead of QVectors?
     QVector<QwtIntervalSample> bins;
@@ -24,7 +23,6 @@ void Histogram::setSamples(const std::vector<double> &rawData, const int nbins, 
 
     // Create a list of pointers to the data, so that we can delete elements that have been sorted without counting over everything again
     for(auto itr = rawData.begin(); itr != rawData.end(); ++itr) {
-        //TODO: Might increase performance if standard iterator is used; see http://stackoverflow.com/a/223405
         dataPtrs.push_back(&(*itr));
     }
 

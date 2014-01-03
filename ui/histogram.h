@@ -23,7 +23,7 @@ class Histogram : public QwtPlotHistogram
 public:
     explicit Histogram(const QString& title = QString::null):QwtPlotHistogram(title){}
 
-    void setSamples(const std::vector<double> &rawData, const int nbins, const double discardThreshold=0);
+    void binData(const std::vector<double> &rawData, const int nbins, const double discardThreshold=0);
     
 private:
     void fillBin(QwtIntervalSample& bin, std::vector<const double*>& dataPointers);

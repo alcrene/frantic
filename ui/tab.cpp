@@ -12,14 +12,24 @@ void tab::show()
     setLayout(layout);
 
     // Display the plots
-//    for(QVector<DtbPlot*>::const_iterator plot_iter=m_plots.begin(); plot_iter != m_plots.end(); ++plot_iter) {
-//        (*plot_iter)->replot();
-//        auto a = *plot_iter;
-//    }
     for(ptrdiff_t i=0; i < m_plots.size(); ++i) {
         m_plots[i]->replot();
     }
     /* Add draw all plots (option?) ? */
+}
+
+DtbPlot* tab::addPlot(int row, int column, int rowSpan, int columnSpan)
+{
+    DtbPlot* plotPtr = new DtbPlot(this);
+    layout->addWidget(plotPtr, row, column, rowSpan, columnSpan);
+    m_plots.push_back(plotPtr);
+
+    return plotPtr;
+}
+
+QGridLayout* tab::getLayout()
+{
+  return layout;
 }
 
 DtbCurve* tab::addCurve(std::vector<double> xdata, std::vector<double> ydata, QString ylabel, std::string color, std::string style)
@@ -57,11 +67,12 @@ Histogram* tab::addHist(const QString& title)
   return histObj;
 }
 
-DtbPlot* tab::addPlot()
-{
-    DtbPlot* plotPtr = new DtbPlot(this);
-    layout->addWidget(plotPtr);
-    m_plots.push_back(plotPtr);
 
-    return plotPtr;
+void InfoBox::addInfo(const QString &label, const QString &infoText)
+{
+  int newRow = rowCount();
+  QLabel* labelWidget = new QLabel(label);
+  QLabel* infoWidget = new QLabel(infoText);
+  addWidget(labelWidget, newRow, 0);
+  addWidget(infoWidget, newRow, 1);
 }
