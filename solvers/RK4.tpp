@@ -1,34 +1,36 @@
-#ifndef RK4_TPP
-#define RK4_TPP
+/* 4th order Runge-Kutta ODE solver
+ */
 
-/*template <typename Functor, typename XVector> RK4<Functor, XVector>::RK4 (Functor Rhs)
-    :Solver<Functor, XVector>(Rhs) {
+#ifndef RK4_H
+#define RK4_H
 
-}*/
+#include "solver.h"
 
-template <typename Functor, typename XVector> void RK4<Functor, XVector>::solve() {
-    // Maybe this should be adapted to interpolate between two series_t elements, to allow
-    // propagation backward in time (or even maybe uneven timesteps ?)
+using std::vector;
 
-  ptrdiff_t i;
+namespace solvers {
 
-  XVector k1, k2, k3, k4;
+template <typename Functor, typename XVector>
+class RK4 : public Solver<Functor, XVector>
+{
+public:
+    RK4<Functor, XVector>() {}
+    virtual ~RK4() {}
+    void solve();
 
-  // Discretize the continuous given range
-  this->discretize();
+private:
+    ODETypes::NOISE_SHAPE noiseShape = ODETypes::NOISE_NONE;
 
-  //assert(dX != NULL); // Make sure the function has been defined
-  //assert(initConditionsSet); // In a real solver we should check this
+    // required because this a template function
+    using Solver<Functor, XVector>::series_t;
+    using Solver<Functor, XVector>::series_x;
+    using Solver<Functor, XVector>::tStepSize;
+    using Solver<Functor, XVector>::tNumSteps;
+    using Solver<Functor, XVector>::ode;
+};
 
-  series_x[0] = ode->x0;
+#include "RK4.tpp"
 
-  for(i=0; i < this->tNumSteps - 1; ++i) {
-    k1 = tStepSize * ode->dX.f(series_x[i], i*tStepSize);
-    k2 = tStepSize * ode->dX.f(series_x[i] + k1/2, (i + 0.5)*tStepSize);
-    k3 = tStepSize * ode->dX.f(series_x[i] + k2/2, (i + 0.5)*tStepSize);
-    k4 = tStepSize * ode->dX.f(series_x[i] + k3, (i + 1)*tStepSize);
-    series_x[i+1] = series_x[i] + (k1 + 2*k2 + 2*k3 + k4)/6;
-  }
 }
 
-#endif
+#endif // RK4_H

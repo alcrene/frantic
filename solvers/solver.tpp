@@ -3,26 +3,70 @@
 
 //#include "solver.h"
 
+template <class XVector> Series<XVector>::Series(size_t cmaxlines):
+  o2scl::table<std::vector<double> >(cmaxlines) {
+  std::string rowstr;
+  rowstr = "t";
+  for(size_t i=1; i<=XVector::SizeAtCompileTime; ++i) {
+        rowstr += " x" + std::to_string(i);
+  }
+  this->line_of_names(rowstr);
+}
+
+// Overloaded data adding function to allow using the XVector type
+template <class XVector> void Series<XVector>::line_of_data(double t, XVector x) {
+  // Virtually a copy of void line_of_data() from o2scl/table.h
+  if (maxlines==0) inc_maxlines(5);
+  if (nlines>=maxlines) inc_maxlines(maxlines);
+      
+  if (intp_set) {
+	intp_set=false;
+	delete si;
+  }
+      
+  if (nlines<maxlines && XVector::SizeAtCompileTime<=(atree.size())) {
+
+	set_nlines(nlines+1);
+	this->set(0, nlines-1, t);
+	for(size_t i=0; i<XVector::SizeAtCompileTime; ++i) {
+	  this->set(i+1, nlines-1, x(i));
+	}
+	
+	return;
+  }
+      
+//  O2SCL_ERR("Not enough lines or columns in line_of_data().",exc_einval);
+  return;
+}
+
+template <class XVector> XVector Series<XVector>::getVectorAtTime(const size_t t_idx) const {
+  static XVector retval;
+  for(size_t i=0; i<XVector::SizeAtCompileTime; ++i) {
+      retval(i) = get(i+1, t_idx);
+  };
+  return retval;
+}
+
 
 /* Return an std::vector with the discretized time steps
  * If stepMultiplier is specified, insert the given number of steps between each step used in the solving algorithm.
  */
-template <class Functor, class XVector> vector<double> Solver<Functor, XVector>::getTSeriesVector(int stepMultiplier){
+template <class ODEdef, class XVector> vector<double> Solver<ODEdef, XVector>::getTSeriesVector(int stepMultiplier){
 
     if ((stepMultiplier == 0) or (stepMultiplier == 1)) {
-        return series_t;
+	  return odeSeries["t"];
     } else if (stepMultiplier > 1) {
         // We want to interpolate points between the time steps
         // UNTESTED !!!
         // double subStepSize = tStepSize/stepMultiplier;
         vector<double> subSeries_t;
         subSeries_t.reserve(stepMultiplier * tNumSteps);
-        for (int i=0; i<series_t.size() - 1; ++i) {
+        for (int i=0; i<odeSeries.get_nlines() - 1; ++i) {
             for (int j=0; j<stepMultiplier; ++j) {
-                subSeries_t.push_back(series_t[i] * (1 - j/stepMultiplier) + series_t[i+1] * j / stepMultiplier);
+                subSeries_t.push_back(odeSeries.get(0, i) * (1 - j/stepMultiplier) + odeSeries.get(0, i+1) * j / stepMultiplier);
             }
         }
-        subSeries_t.push_back(series_t[series_t.size()-1]);  // Add the last element separately, because we don't look beyond it
+        subSeries_t.push_back(odeSeries.get(0, odeSeries.get_nlines()-1));  // Add the last element separately, because we don't look beyond it
         return subSeries_t;
     //} else {
         // We want to reduce the number of points by a factor of stepMultiplier
@@ -31,14 +75,16 @@ template <class Functor, class XVector> vector<double> Solver<Functor, XVector>:
 }
 
 /* Return an std::vector with the time series of the specified X component
+   0 specifies the first component
  */
-template <class Functor, class XVector> vector<double> Solver<Functor, XVector>::getXSeriesVector(ptrdiff_t component) {
-    return getXSeriesVector(component, series_x);
+template <class ODEdef, class XVector> vector<double> Solver<ODEdef, XVector>::getXSeriesVector(ptrdiff_t component) {
+    return odeSeries[component + 1];
 }
 
 /* Return an std::vector with the time series of the given x timeseries
+   Obsolete ?
  */
-template <class Functor, class XVector> vector<double> Solver<Functor, XVector>::getXSeriesVector(ptrdiff_t component, TXSeries xseries) {
+/*template <class ODEdef, class XVector> vector<double> Solver<ODEdef, XVector>::getXSeriesVector(ptrdiff_t component, TXSeries xseries) {
     vector<double> vect;
 
     vect.reserve(xseries.size());
@@ -46,34 +92,47 @@ template <class Functor, class XVector> vector<double> Solver<Functor, XVector>:
         vect.push_back(xseries[i](component));
     }
     return vect;
-}
+	}*/
 
 /* Evaluate a function over the solver's timesteps
+ * TODO: use getTSeries to allow eval over a finer set of points
  */
-template <class Functor, class XVector> vector<XVector, aligned_allocator<XVector> > Solver<Functor, XVector>::evalFunction(std::function<XVector(const double&)> f) {
-    TXSeries result;
+template <class ODEdef, class XVector> Series<XVector> Solver<ODEdef, XVector>::evalFunction(std::function<XVector(const double&)> f) {
+  Series<double> result(odeSeries.get_nlines());
 
-    result.reserve(series_t.size());
-    for(auto t_iter=series_t.begin(); t_iter != series_t.end(); ++t_iter) {
-        result.push_back(f(*t_iter));
-    }
-
-    return result;
+  for(auto t_iter=odeSeries[0].begin(); t_iter != odeSeries.end(); ++t_iter) {
+	result.line_of_data(*t_iter, f(*t_iter));
+  }
+  
+  return result;
 }
 
 /* Return an std::vector for the time series of a function, evaluated at the same points as the solving algorithm
+ * TODO: use getTSeries to allow eval over a finer set of points
  */
-template <class Functor, class XVector> vector<double> Solver<Functor, XVector>::evalFunctionComponent(ptrdiff_t component, std::function<XVector(const double&)> f) {
-    return getXSeriesVector(component, evalFunction(f));
+template <class ODEdef, class XVector> vector<double> Solver<ODEdef, XVector>::evalFunctionComponent(ptrdiff_t component, std::function<XVector(const double&)> f) {
+  std::vector<XVector, Eigen::aligned_allocator<XVector> > result;
+
+  result.reserve(odeSeries.size());
+  for(auto t_iter=odeSeries[0].begin(); t_iter != odeSeries.end(); ++t_iter) {
+        result.push_back(f(*t_iter));
+  }
+
+  return result;
 }
 
 
-/* Set the time range over which to propagate.
+/* Reserve memory for the result series table; 
+ *   for adaptive time step algorithms, this is only an estimation.
  * Set begin, end and step size; the number of steps is calculated
  * If stepSize does not fit an integer number of times in the interval,
  *   it is reduced slightly.
+ * Calculated number of steps is multiplied by 'growFactor', allowing to reserve
+ *   extra memory; useful if it is known that an adaptive stepper will add steps
  */
-template <class Functor, class XVector> void Solver<Functor, XVector>::setRange(double begin, double end, double stepSize) {
+template <class ODEdef, class XVector> void
+Solver<ODEdef, XVector>::setRange(double begin, double end,
+                                   double stepSize, double growFactor) {
   double remainder;
 
   assert((end != begin) and (stepSize != 0));
@@ -88,72 +147,82 @@ template <class Functor, class XVector> void Solver<Functor, XVector>::setRange(
     tNumSteps = tNumSteps + 1;
     tStepSize = (tBegin - tEnd) / tNumSteps;
   }
+
+  odeSeries.inc_maxlines(tNumSteps * growFactor);
 }
 
 /* Set the time range over which to propagate.
  * Set begin, end and number of steps; the step size is calculated
+ * Of course, for a solver with adaptive step size, this is an estimation
+ * Calculated number of steps is multiplied by 'growFactor', allowing to reserve
+ *   extra memory; useful if it is known that an adaptive stepper will add steps
  */
-template <class Functor, class XVector> void Solver<Functor, XVector>::setRange(double begin, double end, int numSteps) {
+template <class ODEdef, class XVector>
+void Solver<ODEdef, XVector>::setRange(double begin, double end,
+										int numSteps, double growFactor) {
   assert((end != begin) and (numSteps != 0));
 
   tBegin = begin;
   tEnd = end;
   tNumSteps = numSteps;
   tStepSize = (tEnd - tBegin) / tNumSteps;
+
+  odeSeries.inc_maxlines(tNumSteps * growFactor);
 }
 
 /* Prepare the result vectors series_t and series_x:
- *  - redimension them to the number of steps
- *  - fill series_t with the time step values
+ * TODO: this seems deprecated
+ *  - sanity check on stepping bounds
+ *  - fill independent column of ODE series with the time step values
  */
-template <class Functor, class XVector> void Solver<Functor, XVector>::discretize() {
+/*template <class ODEdef, class XVector> void Solver<ODEdef, XVector>::discretize() {
   ptrdiff_t i;
 
   // Make sure the time range is properly initialized
   assert((tStepSize != 0) and (tNumSteps != 0));
   assert((tEnd - tBegin)/tStepSize > 0); // We know that tStepSize != 0
+  assert(tNumSteps <= odeSeries.get_maxlines());
 
 
-  series_t.reserve(tNumSteps);
-  series_x.resize(tNumSteps);  // Calls default constructor for each XVector
+  //series_t.reserve(tNumSteps);
+  //series_x.resize(tNumSteps);  // Calls default constructor for each XVector
+
 
   for(i=0; i<tNumSteps; ++i) {
-    series_t.push_back(tBegin + i*tStepSize);
+    odeSeries.set(0, i, tBegin + i*tStepSize);
   }
-}
+}*/
 
 /* Dump all or part of the vectors to cout. Designed for debugging
    TODO: - if " 'x' in vars " type parameter
          - allow multiple vector components
          - allow partial row dump (rows n to m; step k)
  */
-template <class Functor, class XVector> void Solver<Functor, XVector>::dump(std::string vars, ptrdiff_t component)
+template <class ODEdef, class XVector> void Solver<ODEdef, XVector>::dump(std::string cmpntName)
 {
-  ptrdiff_t i = component;
-  if (vars == "x") {
-      std::cout << "x" << i << ": ";
-      for (auto iter = series_x.begin(); iter != series_x.end(); ++iter) {
-          std::cout << "      " << iter[i] << std::endl;
-      }
-      std::cout << std::endl;
+  //  ptrdiff_t i = component;
+  std::cout << cmpntName << ": " << std::endl;;
+  for (size_t i=0; i < odeSeries.get_nlines(); ++i) {
+        std::cout << "      " << odeSeries.get(cmpntName, i) << std::endl;
   }
+  std::cout << std::endl;
 }
 
 /* Propagate the ODE through time to produce the solution vector x(t) (named series_x)
  *
- * This function should always be overloaded by solver class
+ * This function should always be overloaded by the specific solver class
  */
-template <class Functor, class XVector> void Solver<Functor, XVector>::solve() {
+template <class ODEdef, class XVector> void Solver<ODEdef, XVector>::solve() {
   ptrdiff_t i;
 
   // Discretize the continuous given range
-  discretize();
+  //discretize();
 
   //assert(dX != NULL); // Make sure the function has been defined
   //  assert(initConditionsSet); // In a real solver we should check this
   for(i=1; i<tNumSteps; ++i) {
     //fill(series_x[i].begin(), series_x[i].end(), series_t[i]);
-    series_x[i] = XVector::Constant(series_t[i]);
+    odeSeries.line_of_data(tBegin + i*tStepSize, XVector::Constant(odeSeries.get(0, i)));
   }
 }
 

@@ -10,23 +10,23 @@ using std::vector;
 
 namespace solvers {
 
-template <typename Functor, typename XVector>
-class euler : public Solver<Functor, XVector>
+template <typename ODEdef, typename XVector>
+class Euler : public Solver<ODEdef, XVector>
 {
 public:
-    euler<Functor, XVector>() {
+    Euler<ODEdef, XVector>() {
         this->noiseShape = ODETypes::NOISE_NONE;
     }
-    virtual ~euler() {}
+    virtual ~Euler() {}
     void solve();
 
 private:
     // required because this a template function
-    using Solver<Functor, XVector>::series_t;
-    using Solver<Functor, XVector>::series_x;
-    using Solver<Functor, XVector>::tStepSize;
-    using Solver<Functor, XVector>::tNumSteps;
-    using Solver<Functor, XVector>::ode;
+    using Solver<ODEdef, XVector>::odeSeries;
+    using Solver<ODEdef, XVector>::tBegin;
+    using Solver<ODEdef, XVector>::tStepSize;
+    using Solver<ODEdef, XVector>::tNumSteps;
+    using Solver<ODEdef, XVector>::ode;
 };
 
 #include "euler.tpp"
