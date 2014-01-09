@@ -24,7 +24,7 @@ private:
     // required because this a template function
     using Solver<ODEdef, XVector>::odeSeries;
     using Solver<ODEdef, XVector>::tBegin;
-    using Solver<ODEdef, XVector>::tStepSize;
+    using Solver<ODEdef, XVector>::dt;
     using Solver<ODEdef, XVector>::tNumSteps;
     using Solver<ODEdef, XVector>::ode;
 };

@@ -23,7 +23,8 @@ SOURCES += deet.cpp \
     ui/dtbcurve.cpp \
     ui/dtbplot.cpp \
     ui/tab.cpp \
-    ui/histogram.cpp
+    ui/histogram.cpp \
+    solvers/rkf45_gsl.tpp
 #    solvers/stochastic.tpp
 
 
@@ -38,7 +39,8 @@ HEADERS += deet.h\
     ui/dtbcurve.h \
     ui/dtbplot.h \
     ui/tab.h \
-    ui/histogram.h
+    ui/histogram.h \
+    solvers/rkf45_gsl.h
 
 unix:!symbian {
     maemo5 {

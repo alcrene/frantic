@@ -21,7 +21,6 @@
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/StdVector>
 
-#include "odetypes.h"
 
 // The consequence of this is that odedef.h cannot itself include any class derived from solver.h
 
@@ -89,7 +88,7 @@ namespace solvers {
     }
 
 
-    /* setRange functions set tBegin, tEnd, tStepsize and tNumsteps to
+    /* setRange functions set tBegin, tEnd, dt and tNumsteps to
      * compatible values for use by discretize() */
     void setRange(double begin, double end, double stepSize, double growFactor=1.0);
     void setRange(double begin, double end, int numSteps, double growFactor=1.0);
@@ -117,7 +116,7 @@ namespace solvers {
     Series<XVector> odeSeries;
     double tBegin = 0;
     double tEnd = 0;                 // functions can check these are set by testing tBegin == tEnd
-    double tStepSize = 0;            // either StepSize or NumSteps should be computed internally
+    double dt = 0;            // either StepSize or NumSteps should be computed internally
     unsigned long tNumSteps = 0;
     //double initX;                  // If I decide to use this, use 'x0' instead
     // int XDim;                     // Probably should be removed

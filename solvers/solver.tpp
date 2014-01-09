@@ -58,7 +58,7 @@ template <class ODEdef, class XVector> vector<double> Solver<ODEdef, XVector>::g
     } else if (stepMultiplier > 1) {
         // We want to interpolate points between the time steps
         // UNTESTED !!!
-        // double subStepSize = tStepSize/stepMultiplier;
+        // double subStepSize = dt/stepMultiplier;
         vector<double> subSeries_t;
         subSeries_t.reserve(stepMultiplier * tNumSteps);
         for (int i=0; i<odeSeries.get_nlines() - 1; ++i) {
@@ -140,12 +140,12 @@ Solver<ODEdef, XVector>::setRange(double begin, double end,
 
   tBegin = begin;
   tEnd = end;
-  tStepSize = stepSize;
-  tNumSteps = (int) abs(tBegin - tEnd) / tStepSize;
-  remainder = abs(tBegin - tEnd) - tNumSteps*tStepSize;
+  dt = stepSize;
+  tNumSteps = (int) abs(tBegin - tEnd) / dt;
+  remainder = abs(tBegin - tEnd) - tNumSteps*dt;
   if (remainder != 0) {
     tNumSteps = tNumSteps + 1;
-    tStepSize = (tBegin - tEnd) / tNumSteps;
+    dt = (tBegin - tEnd) / tNumSteps;
   }
 
   odeSeries.inc_maxlines(tNumSteps * growFactor);
@@ -165,7 +165,7 @@ void Solver<ODEdef, XVector>::setRange(double begin, double end,
   tBegin = begin;
   tEnd = end;
   tNumSteps = numSteps;
-  tStepSize = (tEnd - tBegin) / tNumSteps;
+  dt = (tEnd - tBegin) / tNumSteps;
 
   odeSeries.inc_maxlines(tNumSteps * growFactor);
 }
@@ -179,8 +179,8 @@ void Solver<ODEdef, XVector>::setRange(double begin, double end,
   ptrdiff_t i;
 
   // Make sure the time range is properly initialized
-  assert((tStepSize != 0) and (tNumSteps != 0));
-  assert((tEnd - tBegin)/tStepSize > 0); // We know that tStepSize != 0
+  assert((dt != 0) and (tNumSteps != 0));
+  assert((tEnd - tBegin)/dt > 0); // We know that dt != 0
   assert(tNumSteps <= odeSeries.get_maxlines());
 
 
@@ -189,7 +189,7 @@ void Solver<ODEdef, XVector>::setRange(double begin, double end,
 
 
   for(i=0; i<tNumSteps; ++i) {
-    odeSeries.set(0, i, tBegin + i*tStepSize);
+    odeSeries.set(0, i, tBegin + i*dt);
   }
 }*/
 
@@ -222,7 +222,7 @@ template <class ODEdef, class XVector> void Solver<ODEdef, XVector>::solve() {
   //  assert(initConditionsSet); // In a real solver we should check this
   for(i=1; i<tNumSteps; ++i) {
     //fill(series_x[i].begin(), series_x[i].end(), series_t[i]);
-    odeSeries.line_of_data(tBegin + i*tStepSize, XVector::Constant(odeSeries.get(0, i)));
+    odeSeries.line_of_data(tBegin + i*dt, XVector::Constant(odeSeries.get(0, i)));
   }
 }
 

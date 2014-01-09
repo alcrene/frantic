@@ -21,7 +21,7 @@ template <typename Functor, typename XVector> void Euler<Functor, XVector>::solv
   odeSeries.line_of_data(tBegin, ode->x0);
 
   for(i=0; i < tNumSteps - 1; ++i) {
-      odeSeries.line_of_data(tBegin + (i+1)*tStepSize, odeSeries.getVectorAtTime(i) + ode->dX.f(i, odeSeries) * tStepSize);
+      odeSeries.line_of_data(tBegin + (i+1)*dt, odeSeries.getVectorAtTime(i) + ode->dX.f(i, odeSeries) * dt);
   }
 }
 
