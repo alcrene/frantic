@@ -6,7 +6,7 @@
 
 }*/
 
-template <typename Functor, typename XVector> void Euler<Functor, XVector>::solve() {
+template <typename ODEdef, typename XVector> void Euler<ODEdef, XVector>::solve(Param parameters) {
     // Maybe this should be adapted to interpolate between two time steps, to allow
     // propagation backward in time
 
@@ -18,10 +18,12 @@ template <typename Functor, typename XVector> void Euler<Functor, XVector>::solv
   //assert(dX != NULL); // Make sure the function has been defined
   //assert(initConditionsSet); // In a real solver we should check this
 
-  odeSeries.line_of_data(tBegin, ode->x0);
+  typename ODEdef::func_dX dX(odeSeries, parameters);
+
+  odeSeries.line_of_data(tBegin, ode.x0);
 
   for(i=0; i < tNumSteps - 1; ++i) {
-      odeSeries.line_of_data(tBegin + (i+1)*dt, odeSeries.getVectorAtTime(i) + ode->dX.f(i, odeSeries) * dt);
+      odeSeries.line_of_data(tBegin + (i+1)*dt, odeSeries.getVectorAtTime(i) + dX.f(i) * dt);
   }
 }
 

@@ -212,7 +212,7 @@ template <class ODEdef, class XVector> void Solver<ODEdef, XVector>::dump(std::s
  *
  * This function should always be overloaded by the specific solver class
  */
-template <class ODEdef, class XVector> void Solver<ODEdef, XVector>::solve() {
+template <class ODEdef, class XVector> void Solver<ODEdef, XVector>::solve(Param parameters) {
   ptrdiff_t i;
 
   // Discretize the continuous given range

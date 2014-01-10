@@ -19,12 +19,11 @@ SOURCES += deet.cpp \
     solvers/euler.tpp \
 #    solvers/RK4.tpp \
 #    solvers/euler_sttic.tpp \
-#    solvers/rkf45_gsl.tpp \
     ui/dtbcurve.cpp \
     ui/dtbplot.cpp \
     ui/tab.cpp \
     ui/histogram.cpp \
-    solvers/rkf45_gsl.tpp
+#    solvers/rkf45_gsl.tpp
 #    solvers/stochastic.tpp
 
 

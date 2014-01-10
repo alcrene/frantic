@@ -2,6 +2,9 @@
  *
  * All solvers should inherit from this one; it provides a generic interface,
  * as well as general functions that may be overloaded if needed.
+ * 
+ * Implements the few elements of o2scl/ode/ode_step.h to allow near copy-paste
+ * implementations of algorithms from o2scl.
  */
 
 #ifndef SOLVER_H
@@ -15,6 +18,7 @@
 #include <vector>
 #include <functional>
 #include <string>
+#include <map>
 #include <assert.h>
 
 #include <o2scl/table.h>
@@ -40,6 +44,8 @@ enum NOISE_SHAPE {
 
 namespace solvers {
 
+  typedef std::map<std::string, double> Param;
+
   /* Specialized class for tables containing series data 
    * (i.e. nD dependent vector (x) vs 1D independent variable (t))
    */
@@ -59,33 +65,38 @@ namespace solvers {
   public:
     //typedef vector<XVector, aligned_allocator<XVector> > TXSeries;
 
-    Solver() {
-      std::cerr << "Creating 'Solver'" << std::endl;
+    Series<XVector> odeSeries;
+
+    Solver(ODEdef& ode):ode(ode) {
+	  order = 0; //Provided for O2scl compatibility
     }
     Solver(const Solver& source) = delete;
     // We disable the copy constructor because it can lead to problems, notably:
     //      - Copying of large result data sets
     //      - Non-synchronious copies, if it was made by accident and one expects a reference
 
-    virtual ~Solver() {
-      std::cerr << "Deleting 'Solver'" << std::endl;
-    }
+    virtual ~Solver() {}
+
+	/* Provided for O2scl compatibility */
+	virtual int get_order() {
+	  return order;
+	}
 
     /* Link the ODE instance to the solver instance.
      */
-    void setODE(ODEdef* ODE) {
+//    void setODE(ODEdef* ODE) {
 
-	  ode = ODE;
-//	  dX = ode->dX;
+//	  ode = ODE;
+////	  dX = ode->dX;
 
-	  // Check that the format of the ode corresponds to what the solver expects.
-	  // If the format can be adapted by discarding part of the ODE (eg. noise component), emit a warning
-	  if ((noiseShape == ODETypes::NOISE_NONE) and (ode->g_shape != ODETypes::NOISE_NONE)) {
-		std::cerr << "Solver is not stochastic. Only the deterministic component of the ODE will be considered." << std::endl;
-	  } else {
-		assert(noiseShape == ode->g_shape);
-	  }
-    }
+//	  // Check that the format of the ode corresponds to what the solver expects.
+//	  // If the format can be adapted by discarding part of the ODE (eg. noise component), emit a warning
+//	  if ((noiseShape == ODETypes::NOISE_NONE) and (ode->g_shape != ODETypes::NOISE_NONE)) {
+//		std::cerr << "Solver is not stochastic. Only the deterministic component of the ODE will be considered." << std::endl;
+//	  } else {
+//		assert(noiseShape == ode->g_shape);
+//	  }
+//    }
 
 
     /* setRange functions set tBegin, tEnd, dt and tNumsteps to
@@ -102,7 +113,7 @@ namespace solvers {
     // Debugging helpers
     void dump(std::string cmpntName);
 
-    void solve();                /* This function should always be overloaded by the actual solver */
+    void solve(Param parameters);                /* This function should always be overloaded by the actual solver */
 
 
 
@@ -113,18 +124,18 @@ namespace solvers {
 	  //  Not using an Eigen matrix to store these vectors as columns
 	  //  allows the vectors themselves to be matrices, if required.
 	  */
-    Series<XVector> odeSeries;
     double tBegin = 0;
     double tEnd = 0;                 // functions can check these are set by testing tBegin == tEnd
     double dt = 0;            // either StepSize or NumSteps should be computed internally
     unsigned long tNumSteps = 0;
+	int order; // Provided for O2scl compatibility
     //double initX;                  // If I decide to use this, use 'x0' instead
     // int XDim;                     // Probably should be removed
     bool initConditionsSet = false;
     ODETypes::NOISE_SHAPE noiseShape;
 
     void discretize();
-    ODEdef* ode;
+    ODEdef& ode;
 //    Functor dX;
   };
 

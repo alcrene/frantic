@@ -14,11 +14,11 @@ template <typename ODEdef, typename XVector>
 class Euler : public Solver<ODEdef, XVector>
 {
 public:
-    Euler<ODEdef, XVector>() {
+    Euler<ODEdef, XVector>(ODEdef& ode):Solver<ODEdef, XVector>(ode) {
         this->noiseShape = ODETypes::NOISE_NONE;
     }
     virtual ~Euler() {}
-    void solve();
+    void solve(Param parameters);
 
 private:
     // required because this a template function
