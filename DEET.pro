@@ -16,7 +16,7 @@ DEFINES += O2SCL_CPP11
 SOURCES += deet.cpp \
     solvers/solver.tpp \
 #    solvers/dummy.tpp \
-    solvers/euler.tpp \
+#    solvers/euler.tpp \
 #    solvers/RK4.tpp \
 #    solvers/euler_sttic.tpp \
     ui/dtbcurve.cpp \
@@ -30,16 +30,15 @@ SOURCES += deet.cpp \
 HEADERS += deet.h\
     solvers/solver.h \
 #    solvers/dummy.h \
-    solvers/euler.h \
+#    solvers/euler.h \
 #    solvers/RK4.h \
 #    solvers/euler_sttic.h \
-#    solvers/rkf45_gsl.h \
 #    solvers/noise.h \
+    solvers/rkf45_gsl.h \
     ui/dtbcurve.h \
     ui/dtbplot.h \
     ui/tab.h \
     ui/histogram.h \
-    solvers/rkf45_gsl.h
 
 unix:!symbian {
     maemo5 {

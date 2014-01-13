@@ -49,73 +49,74 @@
 
 #include "solver.h"
 
-#include <o2scl/test_mgr.h>
-#include <o2scl/ode_funct.h>
-#include <o2scl/ode_rkf45_gsl.h>
-#include <o2scl/table.h>
-#include <o2scl/ode_iv_solve.h>
-#include <o2scl/hdf_file.h>
-#include <o2scl/hdf_io.h>
+//#include <o2scl/test_mgr.h>
+//#include <o2scl/ode_funct.h>
+//#include <o2scl/ode_rkf45_gsl.h>
+//#include <o2scl/table.h>
+//#include <o2scl/ode_iv_solve.h>
+//#include <o2scl/hdf_file.h>
+//#include <o2scl/hdf_io.h>
 
 using std::vector;
 
 namespace solvers {
 
   template <typename ODEdef, typename XVector>
-	class RKF45_gsl : public Solver<ODEdef, XVector>, 
-	{
-	public:
-	  RKF45_gsl<ODEdef, XVector>() {}
-	  virtual ~RKF45_gsl() {}
-	  void solve();
-
-	private:
-	  ODETypes::NOISE_SHAPE noiseShape = ODETypes::NOISE_NONE;
+        class RKF45_gsl : public Solver<ODEdef, XVector>
+        {
+        private:
+//	  ODETypes::NOISE_SHAPE noiseShape = ODETypes::NOISE_NONE;
 
 	  // required because this is a template function
 	  using Solver<ODEdef, XVector>::odeSeries;
+	  using Solver<ODEdef, XVector>::tBegin;
+	  using Solver<ODEdef, XVector>::tEnd;
 	  using Solver<ODEdef, XVector>::dt;  // timestep
-	  //	  using Solver<ODEdef, XVector>::ode->dX;  // Derivative function
 	  using Solver<ODEdef, XVector>::tNumSteps;
 	  using Solver<ODEdef, XVector>::ode;
 
-	  void RKF45_gsl<ODEdef, XVector>::solve() {
+	  typename ODEdef::func_dX dX;
+
+	public:
+	  // Constructor below
+	  virtual ~RKF45_gsl() {}
+
+	  void solve(Param parameters) {
 		double t;
 		XVector x, dx, xout, dx_out;
 		XVector xerr;
 
-		o2scl::test_mgr t;
-		t.set_output_level(1);
+		//o2scl::test_mgr test_mgr;
+		//test_mgr.set_output_level(1);
 
-		ODEdef::func_dX dX(odeSeries);
-		dX.alpha = ode.alpha;   //FIXME: use generic std::map
+		dX.setParameters(parameters);
 
-	    t = tBegin;
+		t = tBegin;
 		x = ode.x0;
 		dx = dX.f(t, x);
-		
+
 		while (t < tEnd) {
-		  step(t, x, dx, xout, xerr, dx_out);
+		  step(t, x, dx, x, xerr, dx);
 		  t += dt;
-		  odeSeries.line_of_data(t, xout);
+		  odeSeries.line_of_data(t, x);
 		}
 
 	  }
-    
+
 	  //----------------------------------------------------
 	  // code from o2scl/ode_rkf45_gsl.h starts here
 	  //----------------------------------------------------
 	protected:
-  
+
 	  /// \name Storage for the intermediate steps
 	  //@{
 	  XVector k2, k3, k4, k5, k6;
-	  XVector ytmp;
+	  XVector xtmp;
 	  //@}
-  
+
 	  /// Size of allocated vectors
 	  //	  size_t ndim;
-  
+
 	  /** \name Storage for the coefficients
 	   */
 	  //@{
@@ -123,12 +124,14 @@ namespace solvers {
 	  double c1, c3, c4, c5, c6;
 	  double ec[7];
 	  //@}
-  
+
 	public:
-  
-	  ode_rkf45_gsl() {
+
+	  RKF45_gsl<ODEdef, XVector>(ODEdef& ode)
+	    :Solver<ODEdef, XVector>(ode), dX(odeSeries) {
+		this->noiseShape = ODETypes::NOISE_NONE;
 		this->order=5;
-    
+
 		ah[0]=1.0/4.0;
 		ah[1]=3.0/8.0;
 		ah[2]=12.0/13.0;
@@ -169,8 +172,8 @@ namespace solvers {
 
 		//		ndim=0;
 	  }
-      
 
+protected:
 	  /** \brief Perform an integration step
 
 		  Given initial value of the n-dimensional function in \c x and
@@ -189,55 +192,55 @@ namespace solvers {
 		  \todo: use standard std::vector for xerr to avoid overhead ?
 		  \todo: implement error checking (removed o2scl mechanism)
 	  */
-	  void step(double t, XVector &x, XVector &dxdt, 
-				XVector &xout, XVector &xerr, XVector &dxdt_out) {
-    
+	  void step(double t, XVector &x, XVector &dxdt,
+		    XVector &xout, XVector &xerr, XVector &dxdt_out) {
+
 		int ret=0;
 		size_t i;
-      
+
 
 		// k1 step
 		for (i=0; i<XVector::SizeAtCompileTime; ++i) {
 		  xtmp[i]=x[i]+ah[0]*dt*dxdt[i];
 		}
 
-		// k2 step
-		k2 = dX(t + ah[0]*dt, xtmp);
+		// k2 step		dX.alpha = ode.alpha;   //FIXME: use generic std::map
+		k2 = dX.f(t + ah[0]*dt, xtmp);
 
 		for (i=0; i<XVector::SizeAtCompileTime; ++i) {
 		  xtmp[i]=x[i]+dt*(b3[0]*dxdt[i]+b3[1]*k2[i]);
 		}
-      
+
 		// k3 step
-		k3 = dX(t + ah[1]*dt, xtmp);
-      
+		k3 = dX.f(t + ah[1]*dt, xtmp);
+
 		for (i=0; i<XVector::SizeAtCompileTime; ++i) {
 		  xtmp[i]=x[i]+dt*(b4[0]*dxdt[i]+b4[1]*k2[i]+b4[2]*k3[i]);
 		}
 
 		// k4 step
-		k4 = dX(t + ah[2]*dt, xtmp);
+		k4 = dX.f(t + ah[2]*dt, xtmp);
 
 		for (i=0; i<XVector::SizeAtCompileTime; ++i) {
 		  xtmp[i]=x[i]+dt*(b5[0]*dxdt[i]+b5[1]*k2[i]+b5[2]*k3[i]+
 						   b5[3]*k4[i]);
 		}
-	
+
 		// k5 step
-		k5 = dX(t + ah[3]*dt, xtmp);
-      
+		k5 = dX.f(t + ah[3]*dt, xtmp);
+
 		for (i=0; i<XVector::SizeAtCompileTime; ++i) {
 		  xtmp[i]=x[i]+dt*(b6[0]*dxdt[i]+b6[1]*k2[i]+b6[2]*k3[i]+
 						   b6[3]*k4[i]+b6[4]*k5[i]);
 		}
-      
+
 		// k6 step and final sum
-		k6 = dX(t + ah[4]*dt, xtmp);
-      
+		k6 = dX.f(t + ah[4]*dt, xtmp);
+
 		for (i=0; i<XVector::SizeAtCompileTime; ++i) {
 		  xout[i]=x[i]+dt*(c1*dxdt[i]+c3*k3[i]+c4*k4[i]+c5*k5[i]+c6*k6[i]);
 		}
-      
+
 		// We put this before the last function evaluation, in contrast
 		// to the GSL version, so that the dxdt[i] that appears in the
 		// for loop below isn't modified by the subsequent derivative
@@ -250,9 +253,11 @@ namespace solvers {
 							+ ec[5] * k5[i]
 							+ ec[6] * k6[i]);
 		}
-    
-	  };
 
-	}
+	  }
+
+
+	};
+}
 
 #endif // RKF45_GSL_H
