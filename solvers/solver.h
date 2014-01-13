@@ -12,6 +12,7 @@
 
 //#include "DEET_global.h"
 
+#include <cmath>
 #include <iostream>
 #include <memory>
 #include <utility>
@@ -57,6 +58,7 @@ namespace solvers {
     void line_of_data(double t, XVector x);
     XVector getVectorAtTime(const size_t t_idx) const;
   };
+
 
 
   /* XVector should be a class derived from Eigen/Matrix */
@@ -134,9 +136,26 @@ namespace solvers {
     bool initConditionsSet = false;
     ODETypes::NOISE_SHAPE noiseShape;
 
-    void discretize();
+//    void discretize();
     ODEdef& ode;
 //    Functor dX;
+
+    /* Returns true if the passed time 't' is within the specified bounds for the ODE
+     * Must first be initialized with setOdeDoneCondition().
+     */
+    bool odeDone(double t) {
+      return signFlipper * t < signFlipper * tEnd;
+    }
+
+  private:
+    int signFlipper = 1;
+
+    void setOdeDoneCondition() {
+      if (tEnd < tBegin) {
+        signFlipper = -1;  // By multiplying by this, we effectively flip the condition
+                           // from t < tEnd to t > tEnd
+      }
+    }
   };
 
 

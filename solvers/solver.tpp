@@ -141,14 +141,17 @@ Solver<ODEdef, XVector>::setRange(double begin, double end,
   tBegin = begin;
   tEnd = end;
   dt = stepSize;
-  tNumSteps = (int) abs(tBegin - tEnd) / dt;
-  remainder = abs(tBegin - tEnd) - tNumSteps*dt;
+  tNumSteps = std::floor( std::abs(tEnd - tBegin) / dt );
+  remainder = abs(tEnd - tBegin) - tNumSteps*dt;
   if (remainder != 0) {
     tNumSteps = tNumSteps + 1;
-    dt = (tBegin - tEnd) / tNumSteps;
+    dt = (tEnd - tBegin) / tNumSteps;
   }
 
-  odeSeries.inc_maxlines(tNumSteps * growFactor);
+  odeSeries.inc_maxlines((tNumSteps + 1) * growFactor);
+  // +1 for the initial condition (which is not a step)
+
+  setOdeDoneCondition();
 }
 
 /* Set the time range over which to propagate.
@@ -159,7 +162,7 @@ Solver<ODEdef, XVector>::setRange(double begin, double end,
  */
 template <class ODEdef, class XVector>
 void Solver<ODEdef, XVector>::setRange(double begin, double end,
-										int numSteps, double growFactor) {
+                                       int numSteps, double growFactor) {
   assert((end != begin) and (numSteps != 0));
 
   tBegin = begin;
@@ -167,7 +170,10 @@ void Solver<ODEdef, XVector>::setRange(double begin, double end,
   tNumSteps = numSteps;
   dt = (tEnd - tBegin) / tNumSteps;
 
-  odeSeries.inc_maxlines(tNumSteps * growFactor);
+  odeSeries.inc_maxlines((tNumSteps + 1) * growFactor);
+  // +1 for the initial condition (which is not a step)
+
+  setOdeDoneCondition();
 }
 
 /* Prepare the result vectors series_t and series_x:

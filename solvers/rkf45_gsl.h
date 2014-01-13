@@ -95,7 +95,7 @@ namespace solvers {
 		x = ode.x0;
 		dx = dX.f(t, x);
 
-		while (t < tEnd) {
+		while (Solver<ODEdef, XVector>::odeDone(t)) {
 		  step(t, x, dx, x, xerr, dx);
 		  t += dt;
 		  odeSeries.line_of_data(t, x);
@@ -112,7 +112,7 @@ namespace solvers {
 	  //@{
 	  XVector k2, k3, k4, k5, k6;
 	  XVector xtmp;
-	  //@}
+	  //@}hout return
 
 
 	  /** \name Storage for the coefficients
@@ -175,62 +175,54 @@ protected:
 		int ret=0;
 		size_t i;
 
+                //bool printout = true;
+                //if (printout) std::cout << dxdt[0] << ", " << dxdt[1] << std::endl;
 
 		// k1 step
-		//xtmp = x + ah(0) * dt * dxdt;
-		for (i=0; i<XVector::SizeAtCompileTime; ++i) {
-		  xtmp[i]=x[i]+ah[0]*dt*dxdt[i];
-		}
+		xtmp = x + dt * ah(0) * dxdt;
+		//if (printout) std::cout << "k1: " << xtmp[0] << ", " << xtmp[1] << std::endl;
 
-		// k2 step		dX.alpha = ode.alpha;   //FIXME: use generic std::map
+		// k2 step
 		k2 = dX.f(t + ah[0]*dt, xtmp);
-
-		for (i=0; i<XVector::SizeAtCompileTime; ++i) {
-		  xtmp[i]=x[i]+dt*(b3[0]*dxdt[i]+b3[1]*k2[i]);
-		}
+		xtmp = x + dt * (b3(0) * dxdt + b3(1) * k2);
+		//if (printout) std::cout << "k2: " << xtmp[0] << ", " << xtmp[1] << std::endl;
 
 		// k3 step
 		k3 = dX.f(t + ah[1]*dt, xtmp);
-
-		for (i=0; i<XVector::SizeAtCompileTime; ++i) {
-		  xtmp[i]=x[i]+dt*(b4[0]*dxdt[i]+b4[1]*k2[i]+b4[2]*k3[i]);
-		}
+		xtmp = x + dt * (b4(0) * dxdt + b4(1) * k2 + b4(2) * k3);
+		//if (printout) std::cout << "k3: " << xtmp[0] << ", " << xtmp[1] << std::endl;
 
 		// k4 step
 		k4 = dX.f(t + ah[2]*dt, xtmp);
-
-		for (i=0; i<XVector::SizeAtCompileTime; ++i) {
-		  xtmp[i]=x[i]+dt*(b5[0]*dxdt[i]+b5[1]*k2[i]+b5[2]*k3[i]+
-						   b5[3]*k4[i]);
-		}
+		xtmp = x + dt * (b5(0) * dxdt + b5(1) * k2 + b5(2) * k3
+				 + b5(3) * k4);
+		//if (printout) std::cout << "k4: " << xtmp[0] << ", " << xtmp[1] << std::endl;
 
 		// k5 step
 		k5 = dX.f(t + ah[3]*dt, xtmp);
-
-		for (i=0; i<XVector::SizeAtCompileTime; ++i) {
-		  xtmp[i]=x[i]+dt*(b6[0]*dxdt[i]+b6[1]*k2[i]+b6[2]*k3[i]+
-						   b6[3]*k4[i]+b6[4]*k5[i]);
-		}
+		xtmp = x + dt * (b6(0) * dxdt + b6(1) * k2 + b6(2) * k3
+				 + b6(3) * k4 + b6(4) * k5);
+		//if (printout) std::cout << "k5: " << xtmp[0] << ", " << xtmp[1] << std::endl;
 
 		// k6 step and final sum
 		k6 = dX.f(t + ah[4]*dt, xtmp);
-
-		for (i=0; i<XVector::SizeAtCompileTime; ++i) {
-		  xout[i]=x[i]+dt*(c1*dxdt[i]+c3*k3[i]+c4*k4[i]+c5*k5[i]+c6*k6[i]);
-		}
+		xout = x + dt * (c1 * dxdt + c3 * k3 + c4 * k4
+				 + c5 * k5 + c6 * k6);
+		//if (printout) std::cout << "k6: " << xout[0] << ", " << xout[1] << std::endl;
 
 		// We put this before the last function evaluation, in contrast
-		// to the GSL version, so that the dxdt[i] that appears in the
-		// for loop below isn't modified by the subsequent derivative
+		// to the GSL version, so that the dxdt that appears
+		// below isn't modified by the subsequent derivative
 		// evaluation using dxdt_out. (The user could have given the
 		// same vector for both)
-		for (i=0; i<XVector::SizeAtCompileTime; ++i) {
-		  xerr[i] = dt * (  ec[1] * dxdt[i]
-							+ ec[3] * k3[i]
-							+ ec[4] * k4[i]
-							+ ec[5] * k5[i]
-							+ ec[6] * k6[i]);
-		}
+		xerr = dt * (ec(1) * dxdt + ec(3) * k3 + ec(4) * k4
+			     + ec(5) * k5 + ec(6) * k6);
+		//if (printout) std::cout << "k1: " << xerr[0] << ", " << xerr[1] << std::endl;
+
+
+		dxdt_out = dX.f(t + dt, xout);
+
+		//if (printout) assert(false);
 
 	  }
 
