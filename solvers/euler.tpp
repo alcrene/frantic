@@ -18,12 +18,17 @@ template <typename ODEdef, typename XVector> void Euler<ODEdef, XVector>::solve(
   //assert(dX != NULL); // Make sure the function has been defined
   //assert(initConditionsSet); // In a real solver we should check this
 
-  typename ODEdef::func_dX dX(odeSeries, parameters);
+  typename ODEdef::func_dX dX(odeSeries);
+  dX.setParameters(parameters);
 
-  odeSeries.line_of_data(tBegin, ode.x0);
+  double t = tBegin;
+  XVector x = ode.x0;
+  odeSeries.line_of_data(t, x);
 
   for(i=0; i < tNumSteps - 1; ++i) {
-      odeSeries.line_of_data(tBegin + (i+1)*dt, odeSeries.getVectorAtTime(i) + dX.f(i) * dt);
+      x += dX.f(t, x) * dt;
+      t += dt;
+      odeSeries.line_of_data(t, x);
   }
 }
 
