@@ -33,7 +33,8 @@ public:
     QGridLayout* getLayout();
 
     // Objects to insert in containers
-    DtbCurve* addCurve(std::vector<double> xdata, std::vector<double> ydata,
+//    DtbCurve* addCurve(std::vector<double> xdata, std::vector<double> ydata,
+    DtbCurve* addCurve(o2scl::table<std::vector<double> >& series, size_t xcol, size_t ycol,
                     QString ylabel="",
                     std::string color="", std::string style="");   // Add a new curve object
     DtbCurve* getCurve(ptrdiff_t index);   // Get pointer to a curve object, to allow setting its properties

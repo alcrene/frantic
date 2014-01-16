@@ -3,12 +3,12 @@
 
 //#include "solver.h"
 
-template <class XVector> Series<XVector>::Series(size_t cmaxlines):
+template <class XVector> Series<XVector>::Series(std::string varname, size_t cmaxlines):
   o2scl::table<std::vector<double> >(cmaxlines) {
   std::string rowstr;
   rowstr = "t";
   for(size_t i=1; i<=XVector::SizeAtCompileTime; ++i) {
-        rowstr += " x" + std::to_string(i);
+        rowstr += " " + varname + std::to_string(i);
   }
   this->line_of_names(rowstr);
 }
@@ -39,6 +39,22 @@ template <class XVector> void Series<XVector>::line_of_data(double t, XVector x)
   return;
 }
 
+template <class XVector> typename Series<XVector>::Statistics Series<XVector>::getStatistics() {
+
+  Statistics stats;
+
+  for(size_t i = 1; i <  this->get_ncolumns(); ++i) {
+      stats.max.push_back(this->max(i));
+      stats.min.push_back(this->min(i));
+      double sum = std::accumulate((*this)[i].begin(), (*this)[i].begin() + this->get_nlines(), 0.0);
+      stats.mean.push_back(sum/this->get_nlines());
+  }
+
+  stats.nsteps = this->get_nlines();
+
+  return stats;
+}
+
 template <class XVector> XVector Series<XVector>::getVectorAtTime(const size_t t_idx) const {
   static XVector retval;
   for(size_t i=0; i<XVector::SizeAtCompileTime; ++i) {
@@ -46,6 +62,16 @@ template <class XVector> XVector Series<XVector>::getVectorAtTime(const size_t t
   };
   return retval;
 }
+
+// Convenience overloads
+template <class XVector> double Series<XVector>::max(size_t icol) {
+  return this->max(this->get_column_name(icol));
+}
+
+template <class XVector> double Series<XVector>::min(size_t icol) {
+  return this->min(this->get_column_name(icol));
+}
+
 
 
 /* Return an std::vector with the discretized time steps
@@ -121,6 +147,19 @@ template <class ODEdef, class XVector> vector<double> Solver<ODEdef, XVector>::e
   return result;
 }
 
+/* Reset the state data. In particular, this clears the series table
+ */
+template <class ODEdef, class XVector> void
+Solver<ODEdef, XVector>::reset() {
+  tBegin = 0;
+  tEnd = 0;
+  dt = 0;
+  tNumSteps = 0;
+  initConditionsSet = false;
+
+  odeSeries.clear_data();
+
+}
 
 /* Reserve memory for the result series table; 
  *   for adaptive time step algorithms, this is only an estimation.

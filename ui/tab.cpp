@@ -6,6 +6,8 @@ tab::tab(QWidget *parent) :
     layout = new QGridLayout;
 }
 
+/* \todo Get colour from plot.color and set it
+ */
 void tab::show()
 {
     // Put the plot widgets on the tab
@@ -32,9 +34,11 @@ QGridLayout* tab::getLayout()
   return layout;
 }
 
-DtbCurve* tab::addCurve(std::vector<double> xdata, std::vector<double> ydata, QString ylabel, std::string color, std::string style)
+//DtbCurve* tab::addCurve(std::vector<double> xdata, std::vector<double> ydata,
+DtbCurve* tab::addCurve(o2scl::table<std::vector<double> >& series, size_t xcol, size_t ycol,
+                        QString ylabel, std::string color, std::string style)
 {
-  DtbCurve* curveObj = new DtbCurve(xdata, ydata);
+  DtbCurve* curveObj = new DtbCurve(series, xcol, ycol);
   curveObj->ylabel = ylabel;
   curveObj->plotformat.color = color;
   curveObj->plotformat.style = style;

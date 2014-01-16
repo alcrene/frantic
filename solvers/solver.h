@@ -18,6 +18,7 @@
 #include <utility>
 #include <vector>
 #include <functional>
+#include <algorithm>
 #include <string>
 #include <map>
 #include <assert.h>
@@ -26,10 +27,8 @@
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/StdVector>
 
-
-// The consequence of this is that odedef.h cannot itself include any class derived from solver.h
-
 // TODO: Mark appropriate functions as const (get__, for example)
+
 
 using std::vector;
 using namespace::Eigen;
@@ -54,28 +53,46 @@ namespace solvers {
   class Series : public o2scl::table<std::vector<double> >
   {
   public:
-    Series(size_t cmaxlines=0);
+
+    struct Statistics
+    {
+      std::vector<double> mean;//(XVector::SizeAtCompileTime);
+      std::vector<double> max;//(XVector::SizeAtCompileTime);
+      std::vector<double> min;//(XVector::SizeAtCompileTime);
+      long nsteps;
+    };
+
+    Series(std::string varname="x", size_t cmaxlines=0);
     void line_of_data(double t, XVector x);
     XVector getVectorAtTime(const size_t t_idx) const;
+    Statistics getStatistics();
+    double max(size_t icol); using o2scl::table<std::vector<double> >::max;
+    double min(size_t icol); using o2scl::table<std::vector<double> >::min;
   };
 
-
-
-  /* XVector should be a class derived from Eigen/Matrix */
+  /* XVector should be a class derived from Eigen/Matrix
+   * \todo: Implement move semantics
+   *        Careful not to break references (e.g. txSeries in dX).
+   */
   template <typename ODEdef, typename XVector> class Solver
   {
   public:
     //typedef vector<XVector, aligned_allocator<XVector> > TXSeries;
 
     Series<XVector> odeSeries;
+    Series<XVector>& odeSeriesRef = odeSeries;  // I can't figure out why I need this, but without it, the runnning .cpp
+                                                // complains that "odeSeries isn't accessible within this context".
+    Series<XVector> odeSeriesError;
+    Series<XVector>& odeSeriesErrorRef = odeSeriesError;
 
-    Solver(ODEdef& ode):ode(ode) {
+    Solver(ODEdef& ode):ode(ode), odeSeries("x"), odeSeriesError("xerr") {
 	  order = 0; //Provided for O2scl compatibility
     }
     Solver(const Solver& source) = delete;
     // We disable the copy constructor because it can lead to problems, notably:
     //      - Copying of large result data sets
     //      - Non-synchronious copies, if it was made by accident and one expects a reference
+    //      - e.g. dX objects expect a reference to odeSeries, which would be broken on the copy
 
     virtual ~Solver() {}
 
@@ -84,23 +101,7 @@ namespace solvers {
 	  return order;
 	}
 
-    /* Link the ODE instance to the solver instance.
-     */
-//    void setODE(ODEdef* ODE) {
-
-//	  ode = ODE;
-////	  dX = ode->dX;
-
-//	  // Check that the format of the ode corresponds to what the solver expects.
-//	  // If the format can be adapted by discarding part of the ODE (eg. noise component), emit a warning
-//	  if ((noiseShape == ODETypes::NOISE_NONE) and (ode->g_shape != ODETypes::NOISE_NONE)) {
-//		std::cerr << "Solver is not stochastic. Only the deterministic component of the ODE will be considered." << std::endl;
-//	  } else {
-//		assert(noiseShape == ode->g_shape);
-//	  }
-//    }
-
-
+    void reset();
     /* setRange functions set tBegin, tEnd, dt and tNumsteps to
      * compatible values for use by discretize() */
     void setRange(double begin, double end, double stepSize, double growFactor=1.0);

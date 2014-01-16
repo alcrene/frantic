@@ -69,6 +69,7 @@ namespace solvers {
 
 	  // required because this is a template function
 	  using Solver<ODEdef, XVector>::odeSeries;
+	  using Solver<ODEdef, XVector>::odeSeriesError;
 	  using Solver<ODEdef, XVector>::tBegin;
 	  using Solver<ODEdef, XVector>::tEnd;
 	  using Solver<ODEdef, XVector>::dt;  // timestep
@@ -94,11 +95,14 @@ namespace solvers {
 		t = tBegin;
 		x = ode.x0;
 		dx = dX.f(t, x);
+		odeSeries.line_of_data(t,x);
+		odeSeriesError.line_of_data(t, XVector::Constant(0));
 
 		while (Solver<ODEdef, XVector>::odeDone(t)) {
 		  step(t, x, dx, x, xerr, dx);
 		  t += dt;
 		  odeSeries.line_of_data(t, x);
+		  odeSeriesError.line_of_data(t, xerr);
 		}
 
 	  }
@@ -185,7 +189,7 @@ protected:
 		// k2 step
 		k2 = dX.f(t + ah[0]*dt, xtmp);
 		xtmp = x + dt * (b3(0) * dxdt + b3(1) * k2);
-		//if (printout) std::cout << "k2: " << xtmp[0] << ", " << xtmp[1] << std::endl;
+		//if (printout) std::cout << "k2: " << xtmp[0] << ", " << xtmp[1] << std::endl;lastmod{1388808352000}; mode{1}; location{[BaseFolder]/Shampine_2005_Error Estimation and Control for ODEs.pdf}; projectFolder{}
 
 		// k3 step
 		k3 = dX.f(t + ah[1]*dt, xtmp);

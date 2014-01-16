@@ -9,6 +9,7 @@
 #include <QVector>
 #include <QString>
 #include <qwt6/qwt_plot_curve.h>
+#include <o2scl/table.h>
 
 /* TODO :
  *   - Constructor to set default value for plotdata?, plotformat
@@ -38,6 +39,7 @@ class DtbCurve : public QwtPlotCurve
 
  public:
   DtbCurve(std::vector<double> xdata, std::vector<double> ydata);
+  DtbCurve(o2scl::table<std::vector<double> >& series, size_t xcol, size_t ycol);
   
   //cls_plotdata plotdata;
   cls_plotformat plotformat;

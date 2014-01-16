@@ -19,7 +19,8 @@ public:
     void attachHist(Histogram* histogram);
 
 private:
-    std::vector<DtbCurve> m_curves;
+    std::vector<DtbCurve*> m_curves;
+    std::vector<Histogram*> m_histograms;
 signals:
     
 public slots:
