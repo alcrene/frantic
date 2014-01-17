@@ -17,21 +17,25 @@
  *      - Set borderflags in intervalSample ?
  */
 
-class Histogram : public QwtPlotHistogram
-{
+namespace cent {
 
-public:
-    explicit Histogram(const QString& title = QString::null):QwtPlotHistogram(title){}
+  class Histogram : public QwtPlotHistogram
+  {
 
-    void binData(const std::vector<double> &rawData, const int nbins, const double discardThreshold=0);
-    
-private:
-    void fillBin(QwtIntervalSample& bin, std::vector<const double*>& dataPointers);
+  public:
+      explicit Histogram(const QString& title = QString::null):QwtPlotHistogram(title){}
 
-signals:
-    
-public slots:
-    
-};
+      void binData(const std::vector<double> &rawData, const int nbins, const double discardThreshold=0);
+
+  private:
+      void fillBin(QwtIntervalSample& bin, std::vector<const double*>& dataPointers);
+
+  signals:
+
+  public slots:
+
+  };
+
+}
 
 #endif // HISTOGRAM_H

@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-TARGET = DEET
+TARGET = CENT
 TEMPLATE = lib
 CONFIG += staticlib
 
@@ -13,21 +13,21 @@ QMAKE_CXXFLAGS += -std=c++11
 #DEFINES += DEET_LIBRARY
 DEFINES += O2SCL_CPP11
 
-SOURCES += deet.cpp \
+SOURCES += \#cent.cpp \
     solvers/solver.tpp \
 #    solvers/dummy.tpp \
     solvers/euler.tpp \
 #    solvers/RK4.tpp \
 #    solvers/euler_sttic.tpp \
-    ui/dtbcurve.cpp \
-    ui/dtbplot.cpp \
+    ui/curve.cpp \
+    ui/plot.cpp \
     ui/tab.cpp \
     ui/histogram.cpp \
 #    solvers/rkf45_gsl.tpp
 #    solvers/stochastic.tpp
 
 
-HEADERS += deet.h\
+HEADERS += \#cent.h\
     solvers/solver.h \
 #    solvers/dummy.h \
     solvers/euler.h \
@@ -35,19 +35,19 @@ HEADERS += deet.h\
 #    solvers/euler_sttic.h \
 #    solvers/noise.h \
     solvers/rkf45_gsl.h \
-    ui/dtbcurve.h \
-    ui/dtbplot.h \
+    ui/curve.h \
+    ui/plot.h \
     ui/tab.h \
     ui/histogram.h \
 
-unix:!symbian {
-    maemo5 {
-        target.path = /opt/usr/lib
-    } else {
-        target.path = /usr/lib
-    }
-    INSTALLS += target
-}
+#unix:!symbian {
+#    maemo5 {
+#        target.path = /opt/usr/lib
+#    } else {
+#        target.path = /usr/lib
+#    }
+#    INSTALLS += target
+#}
 
 # CLHEP library components
 
