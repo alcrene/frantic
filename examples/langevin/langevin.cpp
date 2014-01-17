@@ -2,7 +2,7 @@
 
 #include <QtGui>
 
-/* TODO
+/* TODO 
  */
 
 Langevin::Langevin(QMainWindow *parent) :

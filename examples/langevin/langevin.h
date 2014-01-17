@@ -1,6 +1,6 @@
 /* Example run file for CENT
  * Computes the time series of the delayed Langevin equation for a set of parameters
- * and plots the result.
+ * and plots the result. 
  */
 
 #ifndef Langevin_H

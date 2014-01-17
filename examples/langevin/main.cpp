@@ -1,6 +1,6 @@
 #include <QApplication>
 #include "langevin.h"
-
+ 
 
 int main(int argc, char *argv[])
 {
