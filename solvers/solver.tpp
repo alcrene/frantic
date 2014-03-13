@@ -3,6 +3,10 @@
 
 //#include "solver.h"
 
+/* --------------------------------------------------------------------------
+ * Series class
+ * --------------------------------------------------------------------------*/
+
 template <class XVector> Series<XVector>::Series(std::string varname, size_t cmaxlines):
   o2scl::table<std::vector<double> >(cmaxlines) {
   std::string rowstr;
@@ -43,14 +47,16 @@ template <class XVector> typename Series<XVector>::Statistics Series<XVector>::g
 
   Statistics stats;
 
+  stats.nsteps = this->get_nlines();
+
   for(size_t i = 1; i <  this->get_ncolumns(); ++i) {
       stats.max.push_back(this->max(i));
       stats.min.push_back(this->min(i));
-      double sum = std::accumulate((*this)[i].begin(), (*this)[i].begin() + this->get_nlines(), 0.0);
+      double sum = std::accumulate((*this)[i].begin(), (*this)[i].begin() + stats.nsteps, 0.0);
       stats.mean.push_back(sum/this->get_nlines());
   }
 
-  stats.nsteps = this->get_nlines();
+
 
   return stats;
 }
@@ -72,6 +78,11 @@ template <class XVector> double Series<XVector>::min(size_t icol) {
   return this->min(this->get_column_name(icol));
 }
 
+
+
+/* --------------------------------------------------------------------------
+ * Solver class
+ * --------------------------------------------------------------------------*/
 
 
 /* Return an std::vector with the discretized time steps
@@ -158,6 +169,7 @@ Solver<ODEdef, XVector>::reset() {
   initConditionsSet = false;
 
   odeSeries.clear_data();
+  odeSeriesError.clear_data();
 
 }
 
