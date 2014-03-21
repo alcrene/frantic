@@ -27,6 +27,8 @@
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/StdVector>
 
+#include "solvers/series.h"
+
 // TODO: Mark appropriate functions as const (get__, for example)
 
 
@@ -46,29 +48,6 @@ namespace solvers {
 
   typedef std::map<std::string, double> Param;
 
-  /* Specialized class for tables containing series data 
-   * (i.e. nD dependent vector (x) vs 1D independent variable (t))
-   */
-  template <typename XVector> 
-  class Series : public o2scl::table<std::vector<double> >
-  {
-  public:
-
-    struct Statistics
-    {
-      std::vector<double> mean;//(XVector::SizeAtCompileTime);
-      std::vector<double> max;//(XVector::SizeAtCompileTime);
-      std::vector<double> min;//(XVector::SizeAtCompileTime);
-      long nsteps;
-    };
-
-    Series(std::string varname="x", size_t cmaxlines=0);
-    void line_of_data(double t, XVector x);
-    XVector getVectorAtTime(const size_t t_idx) const;
-    Statistics getStatistics();
-    double max(size_t icol); using o2scl::table<std::vector<double> >::max;
-    double min(size_t icol); using o2scl::table<std::vector<double> >::min;
-  };
 
   /* XVector should be a class derived from Eigen/Matrix
    * \todo: Implement move semantics

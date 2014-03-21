@@ -23,6 +23,7 @@ SOURCES += \#cent.cpp \
     ui/plot.cpp \
     ui/tab.cpp \
     ui/histogram.cpp \
+#    solvers/series.tpp
 #    solvers/rkf45_gsl.tpp
 #    solvers/stochastic.tpp
 
@@ -39,6 +40,7 @@ HEADERS += \#cent.h\
     ui/plot.h \
     ui/tab.h \
     ui/histogram.h \
+    solvers/series.h
 
 #unix:!symbian {
 #    maemo5 {
