@@ -61,24 +61,26 @@ using std::vector;
 
 namespace solvers {
 
-  template <typename ODEdef, typename XVector>
-        class RKF45_gsl : public Solver<ODEdef, XVector>
+  template <typename ODEdef, typename XVector, typename XSeries>
+        class RKF45_gsl : public Solver<ODEdef, XVector, XSeries>
         {
         private:
 //	  ODETypes::NOISE_SHAPE noiseShape = ODETypes::NOISE_NONE;
 
 	  // required because this is a template function
-	  using Solver<ODEdef, XVector>::odeSeries;
-	  using Solver<ODEdef, XVector>::odeSeriesError;
-	  using Solver<ODEdef, XVector>::tBegin;
-	  using Solver<ODEdef, XVector>::tEnd;
-	  using Solver<ODEdef, XVector>::dt;  // timestep
-	  using Solver<ODEdef, XVector>::tNumSteps;
-	  using Solver<ODEdef, XVector>::ode;
+	  using Solver<ODEdef, XVector, XSeries>::odeSeries;
+	  using Solver<ODEdef, XVector, XSeries>::odeSeriesError;
+	  using Solver<ODEdef, XVector, XSeries>::tBegin;
+	  using Solver<ODEdef, XVector, XSeries>::tEnd;
+	  using Solver<ODEdef, XVector, XSeries>::dt;  // stepsize
+	  using Solver<ODEdef, XVector, XSeries>::tNumSteps;
+	  using Solver<ODEdef, XVector, XSeries>::ode;
 
 	  typename ODEdef::func_dX dX;
 
 	public:
+//	  int order = 5;
+
 	  // Constructor below
 	  virtual ~RKF45_gsl() {}
 
@@ -98,7 +100,7 @@ namespace solvers {
 		odeSeries.line_of_data(t,x);
 		odeSeriesError.line_of_data(t, XVector::Constant(0));
 
-		while (Solver<ODEdef, XVector>::odeDone(t)) {
+		while (Solver<ODEdef, XVector, XSeries>::odeDone(t)) {
 		  step(t, x, dx, x, xerr, dx);
 		  t += dt;
 		  odeSeries.line_of_data(t, x);
@@ -133,8 +135,8 @@ namespace solvers {
 
 	public:
 
-	  RKF45_gsl<ODEdef, XVector>(ODEdef& ode)
-	    :Solver<ODEdef, XVector>(ode), dX(odeSeries) {
+	  RKF45_gsl<ODEdef, XVector, XSeries>(ODEdef& ode)
+	    :Solver<ODEdef, XVector, XSeries>(ode), dX(odeSeries) {
 		this->noiseShape = ODETypes::NOISE_NONE;
 		this->order=5;
 

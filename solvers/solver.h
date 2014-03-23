@@ -29,7 +29,10 @@
 
 #include "solvers/series.h"
 
-// TODO: Mark appropriate functions as const (get__, for example)
+/* \todo: Mark appropriate functions as const (get__, for example)
+ * \todo: Use child class for InterpolatedSolver, similar as InterpolatedSeries ?
+ */
+
 
 
 using std::vector;
@@ -50,21 +53,23 @@ namespace solvers {
 
 
   /* XVector should be a class derived from Eigen/Matrix
+   * XSeries is the type of the series for the result variable (mostly, whether interpolated (and with how many points) or not)
    * \todo: Implement move semantics
    *        Careful not to break references (e.g. txSeries in dX).
    */
-  template <typename ODEdef, typename XVector> class Solver
+  template <typename ODEdef, typename XVector, typename XSeries>
+  class Solver
   {
   public:
-    //typedef vector<XVector, aligned_allocator<XVector> > TXSeries;
+    //typedef vector<XVector, aligned_allocator<XVector> > XSeries;
 
-    Series<XVector> odeSeries;
-    Series<XVector>& odeSeriesRef = odeSeries;  // I can't figure out why I need this, but without it, the runnning .cpp
+    XSeries odeSeries;
+    XSeries& odeSeriesRef = odeSeries;  // I can't figure out why I need this, but without it, the runnning .cpp
                                                 // complains that "odeSeries isn't accessible within this context".
     Series<XVector> odeSeriesError;
     Series<XVector>& odeSeriesErrorRef = odeSeriesError;
 
-    Solver(ODEdef& ode):ode(ode), odeSeries("x"), odeSeriesError("xerr") {
+    Solver(ODEdef& ode):ode(ode), odeSeries(this->order, "x"), odeSeriesError("xerr") {
 	  order = 0; //Provided for O2scl compatibility
     }
     Solver(const Solver& source) = delete;
@@ -87,7 +92,7 @@ namespace solvers {
     void setRange(double begin, double end, int numSteps, double growFactor=1.0);
     vector<double> getTSeriesVector(int stepMultiplier=0);
     vector<double> getXSeriesVector(ptrdiff_t component);
-    //vector<double> getXSeriesVector(ptrdiff_t component, TXSeries xseries);
+    //vector<double> getXSeriesVector(ptrdiff_t component, XSeries xseries);
     Series<XVector> evalFunction(std::function<XVector(const double&)> f);
     vector<double> evalFunctionComponent(ptrdiff_t component, std::function<XVector(const double&)> f);
 
@@ -102,7 +107,7 @@ namespace solvers {
 
   protected:
     /*vector<double> series_t;    //independent variable of the ODE solution
-	  TXSeries series_x;   //dependent variable(s) of the ODE solution
+          XSeries series_x;   //dependent variable(s) of the ODE solution
 	  //  Not using an Eigen matrix to store these vectors as columns
 	  //  allows the vectors themselves to be matrices, if required.
 	  */

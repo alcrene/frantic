@@ -6,7 +6,7 @@
 
 }*/
 
-template <typename ODEdef, typename XVector> void Euler<ODEdef, XVector>::solve(Param parameters) {
+template <typename ODEdef, typename XVector, typename XSeries> void Euler<ODEdef, XVector, XSeries>::solve(Param parameters) {
     // Maybe this should be adapted to interpolate between two time steps, to allow
     // propagation backward in time
 
