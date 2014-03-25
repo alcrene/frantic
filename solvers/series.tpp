@@ -1,6 +1,8 @@
 #ifndef SERIES_TPP
 #define SERIES_TPP
 
+#include <string>
+#include <fstream>
 /* --------------------------------------------------------------------------
  * Series class
  * --------------------------------------------------------------------------*/
@@ -41,6 +43,69 @@ template <class XVector> void Series<XVector>::line_of_data(double t, XVector x)
 
 //  O2SCL_ERR("Not enough lines or columns in line_of_data().",exc_einval);
   return;
+}
+
+/* Output the table as plain text. Useful if we want to examine data manually, or
+ * to import into another programme that cannot read HDF files.
+ * File is saved as 'filename' in the current project directory.
+ * To save in another directory, specify a value for 'pathname'.
+ * If the filename exists or cannot be opened, it is appended with a number and retried;
+ * this proceded is repeated until file is successfully opened or 'max_files' is reached.
+ * \tode: Add number before file extension
+ * \todo: Add switch to toggle org-mode style on/off
+ * \tode: Add trailing '\' to pathname if necessary
+ * \todo: Use Boost Filesystem to test existence of files ?
+ */
+template <class XVector>
+void Series<XVector>::dumpToText(const std::string filename,
+                                 const std::string pathname, const int max_files) {
+  std::string outfilename = pathname + filename;
+
+  std::fstream outfile(outfilename, std::ios::in);
+
+  if (outfile.is_open()) {
+      // File exists; try appending numbers to find non-existing one
+      for(int i=1; i<= max_files; ++i) {
+          outfile.close();
+          outfilename = pathname + filename + "_" + std::to_string(i);
+          outfile.open(outfilename, std::ios::in);
+          if (!outfile.is_open()) {
+              break;
+          }
+      }
+  }
+
+  if (!outfile.is_open()) {
+    // Succesfully found a free filename
+    outfile.close();
+    outfile.open(outfilename.c_str(), std::ios::out);
+
+    std::string line = "|";
+    std::string sepline = "|";
+    for(size_t i=0; i<this->get_ncolumns(); ++i) {
+       line = line + this->get_column_name(i) + " |";
+       sepline = sepline + std::string(this->get_column_name(i).length(), '-') + "-+";
+    }
+    // \todo: substitute sepline[-1] = "|"
+    outfile << line << std::endl;
+    outfile << sepline << std::endl;
+
+    for(size_t i=0; i<this->get_nlines(); ++i) {
+        outfile << "| ";
+        for(size_t j=0; j<this->get_ncolumns(); ++j) {
+            outfile << this->get(j,i) << " |";
+        }
+        outfile << std::endl;
+    }
+
+    outfile.close();
+
+    std::cout << "Table written to \n" + outfilename + "\n";
+  } else {
+      std::cerr << "Unable to open a file to export series data" << std::endl;
+  }
+
+
 }
 
 template <class XVector> typename Series<XVector>::Statistics Series<XVector>::getStatistics() {
@@ -85,19 +150,7 @@ template <class XVector> double Series<XVector>::min(size_t icol) {
    Python prototype code is in interpolation_prototype.py
    =================================================================== */
 
-/* Reset all data in order to restart a new computation
- * Everything is reinitialized to 0 or empty, except the interpolation order, which is assumed to be the same.
- * If interpolation order is different, it should be changed separately.
- */
-/*template <class XVector, int ip> void InterpolatedSeries<XVector, ip>::reset() {
-      v = -1;
-      for (auto itr=coeff.begin(); itr != coeff.end(); ++itr) {
-          *itr = XVector::Zero();   // Strictly speaking, should not be necessary
-      }
-      criticalPoints = CriticalPointList();
-    }*/
-
-template <class XVector, int ip> XVector InterpolatedSeries<XVector, ip>::interpolate(double t) {
+template <class XVector, int order, int ip> XVector InterpolatedSeries<XVector, order, ip>::interpolate(double t) {
   //const std::vector<double>& tcol = (*this)[0];
 
   assert(t >= this->get(0,0) and t <= this->get(0,this->get_nlines()-1)); // Ensure we are interpolating within bounds
@@ -108,9 +161,15 @@ template <class XVector, int ip> XVector InterpolatedSeries<XVector, ip>::interp
 	return this->getVectorAtTime(t_found_idx);
   }
 
+ /* if (t_found_idx > 0) {
+    assert(this->get(0, t_found_idx - 1) < t);
+    assert(this->get(0, t_found_idx) > t);
+  }*/
+
+  //this->v = ip - 2;  // DEBUG ONLY !!!!
   size_t v = this->getV(t);
   if (v != this->v) {
-	if (v == this->v + 1) {
+        if (v == this->v + 1) {  // \todo: make sure reset in getV never makes this accidentally verified
 	  this->v = v;
 	  this->getNextLaplaceCoefficients();
 	} else {
@@ -125,29 +184,40 @@ template <class XVector, int ip> XVector InterpolatedSeries<XVector, ip>::interp
 
 /* NOTE: This function assumes that the stepsize is sufficiently small to allow at least
          ip steps between any two critical points.
-         It also does not choose proper points for a decreasing increment
-         (can choose points such that all but the first are on same side 
-         of interpolated point)
+         It SHOULD not choose proper points for a decreasing increment
+         (It used to in this case be able to choose points such that all but
+         the first are on same side of interpolated point; I *think* this is fixed now, somewhat overzealously.)
 */
-template <class XVector, int ip> size_t InterpolatedSeries<XVector, ip>::getV(double t) {
+template <class XVector, int order, int ip> size_t InterpolatedSeries<XVector, order, ip>::getV(double t) {
   //const std::vector<double>& tcol = (*this)[0];
-  size_t v = this->v;  // Don't link variables: this->v must not be modified
-  
-  size_t m = this->get_nlines();    //Maximum value to which we have integrated
-  std::array<double, 2> xi = this->getNeighbourCritPoints(t);
+  static size_t v;    // temporary placeholder: this->v must not be modified
+  static size_t m;    // Maximum value to which we have integrated
+  static const int l = int(ip / 2);   // Half of the interpolation with
+  static std::array<double, 2> xi;
 
-  if ((v < ip - 1) or (this->get(0, v - ip + 1) > t)) {   // Order of these tests is important
-        v = ip - 1;  // v is already too high: return to lowest possible value
-	// \todo: make 'reverse' function for this case, instead of just restarting ?
-	//        If values are going backwards, this test is actually insufficient (see above)
+  v = this->v;
+  m = this->get_nlines();
+  xi = this->getNeighbourCritPoints(t);
+
+  // Check if v is already too high, and reset to lowest possible value
+  // \todo: make 'reverse' function for this case, instead of just restarting ?
+  //        If values are going backwards, this test might still be insufficient, or overkill (see above)
+  if (v < ip - 1) {
+      v = ip - 1;
+    } else if (this->get(0, v - l) > t) {
+      while(this->get(0, v - ip + 1) > t) {
+        // Somewhat agressive resetting of v
+        --v;
+      }
   }
+
 
   while (this->get(0, v) < xi[0]) {
 	// Increase v until we've past the closest crit point less than t
 	++v;
   }
 
-  int l = int(ip / 2);
+
   while (this->get(0, v - l) <= t and v < m and this->get(0,v) < xi[1]) {
 	// Increase v until t is middle of interpolation interval, or we hit a bound
 	++v;
@@ -162,12 +232,16 @@ template <class XVector, int ip> size_t InterpolatedSeries<XVector, ip>::getV(do
  * \todo: Treat the case of no critical point (.begin() == .end())
  * \todo: Make sure distance between points is large enough to interpolate
  */
-template <class XVector, int ip> typename std::array<double, 2> InterpolatedSeries<XVector, ip>::getNeighbourCritPoints(double t) {
+template <class XVector, int order, int ip> typename std::array<double, 2> InterpolatedSeries<XVector, order, ip>::getNeighbourCritPoints(double t) {
 
-  static auto nextCritPointItr = criticalPoints.upper_bound(t); // Returns first element greater than t
+  static std::set<double>::iterator CritPointItr;
+  CritPointItr = criticalPoints.upper_bound(t); // Returns first element greater than t, or .end() if none
 //  this->neighbourCritPointItr[0] = std::prev(this->neighbourCritPointItr[1]);
+  // We shouldn't need to check for getting critical point beyond current t, because that's what the 'm' does in getV()
 
-  assert(*(std::prev(nextCritPointItr)) != t );
+
+  assert(*(std::prev(CritPointItr)) != t );
+  assert(CritPointItr != criticalPoints.begin());   // The initial point should always be a critical point for DDEs, and if we are evaluating at it *exactly*, we don't need to interpolate.
 
 
   // \todo Would something like the code below be more efficient, since we expect in general to only go to the next critical point ?
@@ -181,13 +255,27 @@ template <class XVector, int ip> typename std::array<double, 2> InterpolatedSeri
 //	}
 //  }
 
+  if (this->get_nlines() > 495) {
+      int baaaa = 1;
+    }
 
+  static double nextCritPoint, prevCritPoint;
   // \todo: Avoid creating array by having the member already existing in Series
-  nextCritPointItr--;
-  return std::array<double, 2>({*nextCritPointItr, *(nextCritPointItr++)});
+  if (CritPointItr == criticalPoints.end()) {
+    nextCritPoint = this->get(0, this->get_nlines()-1);
+  } else {
+    nextCritPoint = *CritPointItr;
+  }
+  CritPointItr--;
+  if (CritPointItr == criticalPoints.begin()) {
+      prevCritPoint = this->get(0,0);
+    } else {
+      prevCritPoint = *CritPointItr;
+    }
+  return std::array<double, 2>({prevCritPoint, nextCritPoint});
 }
 
-template <class XVector, int ip> void InterpolatedSeries<XVector, ip>::getLaplaceCoefficients() {
+template <class XVector, int order, int ip> void InterpolatedSeries<XVector, order, ip>::getLaplaceCoefficients() {
   size_t& v = this->v;
 //  const std::vector<double>& tcol = (*this)[0];
 
@@ -199,8 +287,8 @@ template <class XVector, int ip> void InterpolatedSeries<XVector, ip>::getLaplac
 	
   int i, n;
   for(i=0; i < ip - 1; ++i) {
-	d[0] = (this->getVectorAtTime(v - i - 1) - this->getVectorAtTime(v - i))
-	  / (this->get(0, v - i - 1) - this->get(0, v - i));
+        d[i] = (this->getVectorAtTime(v - i - 1) - this->getVectorAtTime(v - i))
+          / (this->get(0, v - i - 1) - this->get(0, v - i));
   }
 
   this->coeff[1] = d[0];
@@ -214,7 +302,7 @@ template <class XVector, int ip> void InterpolatedSeries<XVector, ip>::getLaplac
   }
 }
 
-template <class XVector, int ip> void InterpolatedSeries<XVector, ip>::getNextLaplaceCoefficients() {
+template <class XVector, int order, int ip> void InterpolatedSeries<XVector, order, ip>::getNextLaplaceCoefficients() {
   size_t& v = this->v;
 //  const std::vector<double>& tcol = (*this)[0];
 
@@ -234,7 +322,7 @@ template <class XVector, int ip> void InterpolatedSeries<XVector, ip>::getNextLa
  * This function does no checking, so make sure coefficients are properly calculated beforehand.
  * \todo: Any way to implement this using only temporaries, i.e. in one line without the loop ?
  */
-template <class XVector, int ip> XVector InterpolatedSeries<XVector, ip>::computePoly(double t) {
+template <class XVector, int order, int ip> XVector InterpolatedSeries<XVector, order, ip>::computePoly(double t) {
 //  const std::vector<double>& tcol = (*this)[0];
 
   XVector b = this->coeff[ip - 1];

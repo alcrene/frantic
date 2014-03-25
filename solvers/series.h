@@ -1,6 +1,10 @@
 #ifndef SERIES_H
 #define SERIES_H
 
+#include <iostream>
+#include <fstream>
+#include <string>
+
 #include <vector>
 #include <array>
 #include <set>
@@ -37,6 +41,7 @@ namespace solvers {
     Series& operator=(const Series& other) {o2scl::table<std::vector<double> >::operator=(other);}  // Copy assignment
     void line_of_data(double t, XVector x);
     XVector getVectorAtTime(const size_t t_idx) const;
+    void dumpToText(const std::string filename, const std::string pathname="", const int max_files=100);
     Statistics getStatistics();
     /* Reset all data in order to restart a new computation */
     void reset() {clear_data();}
@@ -50,25 +55,27 @@ namespace solvers {
     /* ======================================================================
        Series with local interpolation
        This class tacitly assumes that we are dealing with delayed DE series data
-       \todo: Use special Eigen STL allocator for coeff ?
+       'order' is the (min) interpolation order, 'ip' the number of nodes used for interpolation
+       'order' is mostly used to add the correct number number of associated critical points;
+       in a DE scheme, it should match the order of the integrator.
+       \todo: Do we need to use special Eigen STL allocator for coeff ?
        ====================================================================== */
-  template <class XVector, int ip=4>
+  template <class XVector, int order, int ip=4>
     class InterpolatedSeries : public Series<XVector>
     {
     public:
 
       /* \todo Refine assert to check that ip is sufficient for interpolation (consider schemes with different order than ip - 1) ? */
-      InterpolatedSeries(int interpolation_order, std::string varname="x", size_t cmaxlines=0) :
-        Series<XVector>(varname, cmaxlines), interpolationOrder(interpolation_order) {
+      InterpolatedSeries(std::string varname="x", size_t cmaxlines=0) :
+        Series<XVector>(varname, cmaxlines) {
 //          std::cout << v << std::endl;
 //        std::cout << ip << std::endl;
 //        std::cout << interpolationOrder << std::endl;
-//        assert(ip - 1 >= interpolationOrder);
+        assert(ip - 1 >= order);
       }
       /* \todo: Implement swap / move semantics */
       InterpolatedSeries& operator=(const InterpolatedSeries& other) {
         criticalPoints = other.criticalPoints;
-        std::swap(interpolationOrder, other.interpolationOrder);
         v = other.v;
         coeff = other.coeff;
         Series<XVector>::operator=(other);
@@ -112,8 +119,12 @@ namespace solvers {
     };
 
     XVector interpolate(double t);
-    void addPrimaryCriticalPoint(const double point, const double delay) {criticalPoints.addCriticalPoint(point, delay, interpolationOrder);}
-    void addSecondaryCriticalPoint(const double point, const double delay) {criticalPoints.addCriticialPOint(point, delay, interpolationOrder - 1);}
+    void addPrimaryCriticalPoint(const double point, const double delay) {criticalPoints.addCriticalPoint(point, delay, order);}
+    void addSecondaryCriticalPoint(const double point, const double delay) {criticalPoints.addCriticialPOint(point, delay, order - 1);}
+    /* Reset all data in order to restart a new computation
+     * Everything is reinitialized to 0 or empty, except the interpolation order, which is assumed to be the same.
+     * If interpolation order is different, it should be changed separately.
+     */
     void reset() {
       v = 0;
       for (auto itr=coeff.begin(); itr != coeff.end(); ++itr) {
@@ -124,7 +135,6 @@ namespace solvers {
 
     private:
 
-    const int interpolationOrder;
     size_t v = 0;  // *Don't* use v=-1 : size_t is strictly positive
     std::array<XVector, ip> coeff;
     CriticalPointList criticalPoints;

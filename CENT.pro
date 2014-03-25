@@ -16,7 +16,6 @@ DEFINES += O2SCL_CPP11
 SOURCES += \#cent.cpp \
     solvers/solver.tpp \
 #    solvers/dummy.tpp \
-    solvers/euler.tpp \
 #    solvers/RK4.tpp \
 #    solvers/euler_sttic.tpp \
     ui/curve.cpp \

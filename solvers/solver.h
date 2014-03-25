@@ -69,7 +69,7 @@ namespace solvers {
     Series<XVector> odeSeriesError;
     Series<XVector>& odeSeriesErrorRef = odeSeriesError;
 
-    Solver(ODEdef& ode):ode(ode), odeSeries(this->order, "x"), odeSeriesError("xerr") {
+    Solver(ODEdef& ode):ode(ode), odeSeries("x"), odeSeriesError("xerr") {
 	  order = 0; //Provided for O2scl compatibility
     }
     Solver(const Solver& source) = delete;
