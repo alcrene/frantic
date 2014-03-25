@@ -1,0 +1,7 @@
+* General
+** DONE Compile solvers and ui librairies separately
+** TODO Add cleaning step to compilation procedure to update link to library file in ~/local/lib
+
+* solvers
+** TODO Split Series, SeriesInterpolated
+** TODO Compile each module separately
