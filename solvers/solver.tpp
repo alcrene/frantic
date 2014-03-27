@@ -18,7 +18,7 @@ template <class ODEdef, class XVector, class XSeries> vector<double> Solver<ODEd
         // UNTESTED !!!
         // double subStepSize = dt/stepMultiplier;
         vector<double> subSeries_t;
-        subSeries_t.reserve(stepMultiplier * tNumSteps);
+        subSeries_t.reserve(stepMultiplier * nSteps);
         for (int i=0; i<odeSeries.get_nlines() - 1; ++i) {
             for (int j=0; j<stepMultiplier; ++j) {
                 subSeries_t.push_back(odeSeries.get(0, i) * (1 - j/stepMultiplier) + odeSeries.get(0, i+1) * j / stepMultiplier);
@@ -46,7 +46,7 @@ template <class ODEdef, class XVector, class XSeries> vector<double> Solver<ODEd
     vector<double> vect;
 
     vect.reserve(xseries.size());
-    for(size_t i=0;i < tNumSteps; ++i) {
+    for(size_t i=0;i < nSteps; ++i) {
         vect.push_back(xseries[i](component));
     }
     return vect;
@@ -86,7 +86,7 @@ Solver<ODEdef, XVector, XSeries>::reset() {
   tBegin = 0;
   tEnd = 0;
   dt = 0;
-  tNumSteps = 0;
+  nSteps = 0;
   initConditionsSet = false;
 
 
@@ -116,14 +116,14 @@ Solver<ODEdef, XVector, XSeries>::setRange(double begin, double end,
   tBegin = begin;
   tEnd = end;
   dt = stepSize;
-  tNumSteps = std::floor( std::abs(tEnd - tBegin) / dt );
-  remainder = abs(tEnd - tBegin) - tNumSteps*dt;
+  nSteps = std::floor( std::abs(tEnd - tBegin) / dt );
+  remainder = abs(tEnd - tBegin) - nSteps*dt;
   if (remainder != 0) {
-    tNumSteps = tNumSteps + 1;
-    dt = (tEnd - tBegin) / tNumSteps;
+    nSteps = nSteps + 1;
+    dt = (tEnd - tBegin) / nSteps;
   }
 
-  odeSeries.inc_maxlines((tNumSteps + 1) * growFactor);
+  odeSeries.inc_maxlines((nSteps + 1) * growFactor);
   // +1 for the initial condition (which is not a step)
 
   setOdeDoneCondition();
@@ -142,10 +142,10 @@ void Solver<ODEdef, XVector, XSeries>::setRange(double begin, double end,
 
   tBegin = begin;
   tEnd = end;
-  tNumSteps = numSteps;
-  dt = (tEnd - tBegin) / tNumSteps;
+  nSteps = numSteps;
+  dt = (tEnd - tBegin) / nSteps;
 
-  odeSeries.inc_maxlines((tNumSteps + 1) * growFactor);
+  odeSeries.inc_maxlines((nSteps + 1) * growFactor);
   // +1 for the initial condition (which is not a step)
 
   setOdeDoneCondition();
@@ -160,16 +160,16 @@ void Solver<ODEdef, XVector, XSeries>::setRange(double begin, double end,
   ptrdiff_t i;
 
   // Make sure the time range is properly initialized
-  assert((dt != 0) and (tNumSteps != 0));
+  assert((dt != 0) and (nSteps != 0));
   assert((tEnd - tBegin)/dt > 0); // We know that dt != 0
-  assert(tNumSteps <= odeSeries.get_maxlines());
+  assert(nSteps <= odeSeries.get_maxlines());
 
 
-  //series_t.reserve(tNumSteps);
-  //series_x.resize(tNumSteps);  // Calls default constructor for each XVector
+  //series_t.reserve(nSteps);
+  //series_x.resize(nSteps);  // Calls default constructor for each XVector
 
 
-  for(i=0; i<tNumSteps; ++i) {
+  for(i=0; i<nSteps; ++i) {
     odeSeries.set(0, i, tBegin + i*dt);
   }
 }*/
@@ -201,7 +201,7 @@ template <class ODEdef, class XVector, class XSeries> void Solver<ODEdef, XVecto
 
   //assert(dX != NULL); // Make sure the function has been defined
   //  assert(initConditionsSet); // In a real solver we should check this
-  for(i=1; i<tNumSteps; ++i) {
+  for(i=1; i<nSteps; ++i) {
     //fill(series_x[i].begin(), series_x[i].end(), series_t[i]);
     odeSeries.line_of_data(tBegin + i*dt, XVector::Constant(odeSeries.get(0, i)));
   }

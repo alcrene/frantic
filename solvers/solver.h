@@ -113,8 +113,8 @@ namespace solvers {
 	  */
     double tBegin = 0;
     double tEnd = 0;                 // functions can check these are set by testing tBegin == tEnd
-    double dt = 0;            // either StepSize or NumSteps should be computed internally
-    unsigned long tNumSteps = 0;
+    double dt = 0;            // either the step size dt or NumSteps should be computed internally
+    unsigned long nSteps = 0;
 	int order; // Provided for O2scl compatibility
     //double initX;                  // If I decide to use this, use 'x0' instead
     // int XDim;                     // Probably should be removed

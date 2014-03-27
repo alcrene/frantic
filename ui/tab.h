@@ -38,7 +38,7 @@ namespace cent {
   //    Curve* addCurve(std::vector<double> xdata, std::vector<double> ydata,
       Curve* addCurve(o2scl::table<std::vector<double> >& series, size_t xcol, size_t ycol,
                       QString ylabel="",
-                      std::string color="", std::string style="");   // Add a new curve object
+                      QColor color=Qt::black, std::string style="");   // Add a new curve object
       Curve* getCurve(ptrdiff_t index);   // Get pointer to a curve object, to allow setting its properties
       Curve* getCurve();
       Histogram* addHist(const QString& title = QString::null);                 //

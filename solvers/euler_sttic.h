@@ -1,46 +1,49 @@
 #ifndef EULER_STTIC_H
 #define EULER_STTIC_H
 
-#include "CLHEP/Random/TripleRand.h"
-#include "CLHEP/Random/RandGaussT.h"
-
 #include "solver.h"
-//#include "stochastic.h"
 
 using std::vector;
 
 namespace solvers {
 
-template <typename Functor, typename XVector, typename StticGen>
-class euler_sttic : public Solver<Functor, XVector>
-{
-public:
-    euler_sttic() {
-        this->noiseShape = ODETypes::NOISE_VECTOR;
-    }
-    virtual ~euler_sttic() {}
+  template <typename ODEdef, typename XVector, typename XSeries>
+  class Euler_sttic : public Solver<ODEdef, XVector, XSeries>
+  {
+  public:
+      Euler_sttic() {
+          this->noiseShape = ODETypes::NOISE_VECTOR;
+      }
+      virtual ~euler_sttic() {}
 
-    void setStochasticGenerator(StticGen* NumberGeneratorPointer) {
-        nbrGen = NumberGeneratorPointer;
-    }
+      void setStochasticGenerator(StticGen* NumberGeneratorPointer) {
+          nbrGen = NumberGeneratorPointer;
+      }
 
-    void solve();
+      void solve(Param parameters) {
+          // Maybe this should be adapted to interpolate between two series_t elements, to allow
+          // propagation backward in time (or even maybe uneven timesteps ?)
 
+        ptrdiff_t i;
 
+        typename ODEdef::func_dX dX(this->odeSeries);
+        dX.setParameters(parameters);
 
-private:
-    StticGen* nbrGen;
+        double t = this->tBegin;
+        XVector x = this->ode.x0;
+        this->odeSeries.line_of_data(t,x);
 
-    // required because this a template function
-    using Solver<Functor, XVector>::series_t;
-    using Solver<Functor, XVector>::series_x;
-    using Solver<Functor, XVector>::tStepSize;
-    using Solver<Functor, XVector>::tNumSteps;
-    using Solver<Functor, XVector>::ode;
-    using Solver<Functor, XVector>::dX;
-};
+        for(i=0; i < this->nSteps - 1; ++i) {
+      //      XVector test = dX.g(series_x[i], i*tStepSize);
+            // \todo: Check if we should specify Eigen matrix multiplication
+            x += dX.f(t, x) * this->dt + dX.g(t, x) * dX.dS(dt);
+            t += dt;
+            this->odeSeries.line_of_data(t, x);
+        }
 
-#include "euler_sttic.tpp"
+      }
+
+  };
 
 }
 

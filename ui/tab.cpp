@@ -37,13 +37,21 @@ namespace cent {
   }
 
   //Curve* tab::addCurve(std::vector<double> xdata, std::vector<double> ydata,
+  /* \todo: The way this is done seems like a hackish cludge to get what I want; there must be a better way
+   */
   Curve* tab::addCurve(o2scl::table<std::vector<double> >& series, size_t xcol, size_t ycol,
-                          QString ylabel, std::string color, std::string style)
+                          QString ylabel, QColor color, std::string style)
   {
-    Curve* curveObj = new Curve(series, xcol, ycol);
+    std::vector<double>::const_iterator xdata_itr = series.get_column(series.get_column_name(xcol)).begin();
+    std::vector<double>::const_iterator ydata_itr = series.get_column(series.get_column_name(ycol)).begin();
+    std::vector<double> xdata(xdata_itr, xdata_itr + series.get_nlines());
+    std::vector<double> ydata(ydata_itr, ydata_itr + series.get_nlines());
+    Curve* curveObj = new Curve(xdata, ydata);
+
+    //Curve* curveObj = new Curve(series, xcol, ycol);
     curveObj->ylabel = ylabel;
-    curveObj->plotformat.color = color;
-    curveObj->plotformat.style = style;
+    //curveObj->setColor(color);
+    //curveObj->plotformat.style = style;
 
     m_curves.push_back(curveObj);
 

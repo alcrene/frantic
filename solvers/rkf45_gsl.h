@@ -73,7 +73,7 @@ namespace solvers {
 	  using Solver<ODEdef, XVector, XSeries>::tBegin;
 	  using Solver<ODEdef, XVector, XSeries>::tEnd;
 	  using Solver<ODEdef, XVector, XSeries>::dt;  // stepsize
-	  using Solver<ODEdef, XVector, XSeries>::tNumSteps;
+	  using Solver<ODEdef, XVector, XSeries>::nSteps;
 	  using Solver<ODEdef, XVector, XSeries>::ode;
 
 	  typename ODEdef::func_dX dX;

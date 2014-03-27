@@ -24,27 +24,12 @@ namespace cent {
    */
   {
    private:
-    /*  class cls_plotdata {
-    public:
-      cls_plotdata(std::vector<double> xdata, std::vector<double> ydata);
 
-          QVector<double> xdata;
-          QVector<double> ydata;
-          QVector<double> xerr;
-          QVector<double> yerr;
-          };*/
-
-    struct cls_plotformat {
-          std::string color;
-          std::string style;
-    };
 
    public:
-    Curve(std::vector<double> xdata, std::vector<double> ydata);
-    Curve(o2scl::table<std::vector<double> >& series, size_t xcol, size_t ycol);
+    Curve(const std::vector<double>& xdata, const std::vector<double>& ydata);
+    Curve(const o2scl::table<std::vector<double> >& series, const size_t xcol, const size_t ycol);
 
-    //cls_plotdata plotdata;
-    cls_plotformat plotformat;
     QString xlabel;
     QString ylabel;
     QString name;      // Internal reference name

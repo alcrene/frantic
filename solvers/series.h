@@ -27,6 +27,9 @@ namespace solvers {
   template <class XVector>
     class Series : public o2scl::table<std::vector<double> >
     {
+    private:
+      typedef o2scl::table<std::vector<double> > super;
+
     public:
 
     struct Statistics
@@ -63,6 +66,9 @@ namespace solvers {
   template <class XVector, int order, int ip=4>
     class InterpolatedSeries : public Series<XVector>
     {
+    private:
+      typedef Series<XVector> super;
+
     public:
 
       /* \todo Refine assert to check that ip is sufficient for interpolation (consider schemes with different order than ip - 1) ? */
@@ -131,6 +137,8 @@ namespace solvers {
           *itr = XVector::Zero();   // Strictly speaking, should not be necessary
       }
       criticalPoints = CriticalPointList();
+
+      super::reset();
     }
 
     private:

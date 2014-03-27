@@ -7,8 +7,8 @@
 #include <QGridLayout>
 #include <qwt6/qwt_plot.h>
 
-#include "ui/curve.h"
-#include "ui/histogram.h"
+#include "curve.h"
+#include "histogram.h"
 
 namespace cent {
 

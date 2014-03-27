@@ -18,7 +18,7 @@ private:
     using Solver<ODEdef, XVector, XSeries>::odeSeries;
     using Solver<ODEdef, XVector, XSeries>::tBegin;
     using Solver<ODEdef, XVector, XSeries>::dt;
-    using Solver<ODEdef, XVector, XSeries>::tNumSteps;
+    using Solver<ODEdef, XVector, XSeries>::nSteps;
     using Solver<ODEdef, XVector, XSeries>::ode;
 
  public:
@@ -35,11 +35,6 @@ private:
 
       ptrdiff_t i;
 
-      // Discretize the continuous given range
-    //  this->discretize();
-
-      //assert(dX != NULL); // Make sure the function has been defined
-      //assert(initConditionsSet); // In a real solver we should check this
 
       typename ODEdef::func_dX dX(odeSeries);
       dX.setParameters(parameters);
@@ -48,7 +43,7 @@ private:
       XVector x = ode.x0;
       odeSeries.line_of_data(t, x);
 
-      for(i=0; i < tNumSteps - 1; ++i) {
+      for(i=0; i < nSteps - 1; ++i) {
           x += dX.f(t, x) * dt;
           t += dt;
           odeSeries.line_of_data(t, x);
