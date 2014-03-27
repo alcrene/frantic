@@ -36,12 +36,12 @@ win32:CONFIG(release, debug|release): LIBS += -L/usr/lib/ -lqwt
 else:win32:CONFIG(debug, debug|release): LIBS += -L/usr/lib/ -lqwtd
 else:unix: LIBS += -L/usr/lib/ -lqwt
 
-# DEET library
-INCLUDEPATH += /home/alex/code/c++/cent/src
-DEPENDPATH += /home/alex/code/c++/cent/builds/debug
+# CENT library
+INCLUDEPATH += /home/alex/code/c++/cent
+DEPENDPATH += /home/alex/local/lib
 
 
-unix:!macx: LIBS += -L/home/alex/code/c++/cent/builds/debug/ -lCENT
+unix:!macx: LIBS += -L/home/alex/local/lib -lCENT -lqtCENT
 #unix:!macx: LIBS += -lCENT
 
 # O2scl library

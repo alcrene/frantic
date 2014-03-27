@@ -12,6 +12,8 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <array>
+#include <random>
 #include <eigen3/Eigen/Dense>
 #include <QMainWindow>
 #include <QGridLayout>
@@ -19,7 +21,7 @@
 #include <iostream>
 
 #include "solvers/solver.h"
-#include "solvers/euler.h"
+//#include "solvers/euler.h"
 #include "solvers/rkf45_gsl.h"
 //#include "solvers/euler_sttic.h"
 #include "ui/tab.h"
@@ -68,7 +70,7 @@ class Langevin : public QMainWindow
 public:
     // TODO: use generic class which unpacks to the number of parameters required for the distribution
 //    typedef solvers::Noise<odeDef::Engine, odeDef::Dist, odeDef::TNoise, double, double> StticGen;
-    typedef solvers::Euler<odeDef, odeDef::XVector, odeDef::XSeries> TSolver;
+    typedef solvers::RKF45_gsl<odeDef, odeDef::XVector, odeDef::XSeries> TSolver;
 
 
     explicit Langevin(QMainWindow *parent = 0);
@@ -104,12 +106,12 @@ public:
 struct odeDef::func_dX{
     double alpha;
     double tau;
+//    double D;   // Diffusion constant
 
     XSeries& txSeries;
 
-    func_dX(XSeries& series)
-      :txSeries(series) {
-    }
+
+    func_dX(XSeries& series) : txSeries(series) {}
 
 
     void setParameters(solvers::Param parameters) {
@@ -125,38 +127,50 @@ struct odeDef::func_dX{
     XVector initPhi(double t); // Define in .cpp file
 
     /* Drift portion of the differential equation.
-     * t_idx is the index, in txSeries, of the time at which we want to calculate the derivative
      */
     // const is required to accept temporaries
-    XVector f(const double& t, const XVector& X) {
+    XVector f(const double t, const XVector& X) {
       static XVector Xtau;
       if (t < tau) {
           Xtau = initPhi(t - tau);
       } else {
-        // If code crashes here, check that there are at least 3 points
-        // in txSeries to do the interpolation
         Xtau << txSeries.interpolate(t - tau);
-        //Xtau << txSeries.interp(0, t - tau, 1);
-          //idx = txSeries.ordered_lookup("t", t-tau);
-
       }
       return f(t, X, Xtau);
     }
-    XVector f(const double& t, const XVector& X, const XVector& Xtau) {
+
+    XVector f(const double t, const XVector& X, const XVector& Xtau) {
       return alpha * Xtau;
     }
 
-// Functions g and dS are only relevent for stochastic equations
-/*        XVector g(const XVector& x, const double& t) {
-        static XVector retval;
-        retval << 0, D;
-        return retval;
-    }
-*/
-    /* Noise increment */
-    /*TNoise dS(const dRKF45_gslouble dt) {
+    /* =============================================================
+     * Stochastic components
+     * (comment out / delete for deterministic problems)
+     * ============================================================= */
 
-    }*/
+//    std::random_device rd;
+//    std::mt19937 gen(rd());
+//    std::normal_distribution<> dist;
+
+//    /* The return type of g might be XVector or a higher order tensor if there are multiple random variables.
+//     * The return type of dS should correspond to that of g.
+//     * (This is yet untested with return types other than XVector.)
+//     */
+//    XVector g(const double t, const XVector& x) {
+//        static XVector retval;
+//        retval << sqrt(2*D);
+//        return retval;
+//    }
+
+//    /* Noise increment */
+//    TNoise dS(const double dt) {
+//      static double lastdt = 0;
+//      if (lastdt != dt) {
+//          dist.param(0, sqrt(dt));
+//      }
+
+//      return dist(gen);
+//    }
 
 };
 
