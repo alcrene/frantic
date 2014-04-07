@@ -23,6 +23,7 @@ HEADERS += tab.h \
     curve.h \
     plot.h \
     histogram.h \
+   qtcent.h
 
 
 #unix:!symbian {
@@ -39,8 +40,8 @@ HEADERS += tab.h \
 #INCLUDEPATH += /home/alex/local/include
 #DEPENDPATH += /home/alex/local/include
 
-INCLUDEPATH += /home/alex/code/c++/cent/src
-DEPENDPATH += /home/alex/code/c++/cent/builds/debug
+#INCLUDEPATH += /home/alex/code/c++/cent
+#DEPENDPATH += /home/alex/code/c++/cent/builds/debug
 
 #unix:!macx: LIBS += -L/home/alex/local/lib64
 

@@ -57,8 +57,8 @@ template <class XVector> void Series<XVector>::line_of_data(double t, XVector x)
  * \todo: Use Boost Filesystem to test existence of files ?
  */
 template <class XVector>
-void Series<XVector>::dumpToText(const std::string filename,
-                                 const std::string pathname, const int max_files) {
+void Series<XVector>::dumpToText(const std::string filename, const std::string pathname,
+                                 const bool print_names, const std::string format, const int max_files) {
   std::string outfilename = pathname + filename;
 
   std::fstream outfile(outfilename, std::ios::in);
@@ -80,21 +80,32 @@ void Series<XVector>::dumpToText(const std::string filename,
     outfile.close();
     outfile.open(outfilename.c_str(), std::ios::out);
 
-    std::string line = "|";
-    std::string sepline = "|";
+    std::array<std::string, 3> formatStrings = getFormatStrings(format);
+    std::string headChar = formatStrings[0];  // 1 or more characters that appears at the beginning of each line
+    std::string sepChar = formatStrings[1];   // 1 or more characters that appears between each element on a line
+    std::string tailChar = formatStrings[2];  // 1 or more characters that appears at the end of each line
+
+    std::string line = headChar;
+    std::string sepline = headChar;
     for(size_t i=0; i<this->get_ncolumns(); ++i) {
-       line = line + this->get_column_name(i) + " |";
+       line = line + this->get_column_name(i) + sepChar;
        sepline = sepline + std::string(this->get_column_name(i).length(), '-') + "-+";
     }
     // \todo: substitute sepline[-1] = "|"
-    outfile << line << std::endl;
-    outfile << sepline << std::endl;
+
+    if (print_names) {
+      outfile << line << std::endl;
+      if (format == "org") {
+          outfile << sepline << std::endl;
+        }
+      }
 
     for(size_t i=0; i<this->get_nlines(); ++i) {
-        outfile << "| ";
-        for(size_t j=0; j<this->get_ncolumns(); ++j) {
-            outfile << this->get(j,i) << " |";
+        outfile << headChar;
+        for(size_t j=0; j < this->get_ncolumns() - 1; ++j) {
+            outfile << this->get(j,i) << sepChar;
         }
+        outfile << this->get(this->get_ncolumns() - 1, i) << tailChar;  // Don't put a sep character for last column
         outfile << std::endl;
     }
 
@@ -106,6 +117,23 @@ void Series<XVector>::dumpToText(const std::string filename,
   }
 
 
+}
+
+template <class XVector> std::array<std::string, 3> Series<XVector>::getFormatStrings(std::string format) {
+  std::array<std::string, 3> formatStrings;
+
+  if (format == "org") {
+      formatStrings[0] = "|";
+      formatStrings[1] = " |";
+      formatStrings[2] = "|";
+    } else {
+      // If it's not a special format, use the format string as separator
+      formatStrings[0] = "";
+      formatStrings[1] = format;
+      formatStrings[2] = "";
+    }
+
+  return formatStrings;
 }
 
 template <class XVector> typename Series<XVector>::Statistics Series<XVector>::getStatistics() {
@@ -254,10 +282,6 @@ template <class XVector, int order, int ip> typename std::array<double, 2> Inter
 //	  --(this->neighbourCritPointIdxs[0]);
 //	}
 //  }
-
-  if (this->get_nlines() > 495) {
-      int baaaa = 1;
-    }
 
   static double nextCritPoint, prevCritPoint;
   // \todo: Avoid creating array by having the member already existing in Series

@@ -44,13 +44,17 @@ namespace solvers {
     Series& operator=(const Series& other) {o2scl::table<std::vector<double> >::operator=(other);}  // Copy assignment
     void line_of_data(double t, XVector x);
     XVector getVectorAtTime(const size_t t_idx) const;
-    void dumpToText(const std::string filename, const std::string pathname="", const int max_files=100);
+    void dumpToText(const std::string filename, const std::string pathname="",
+                    const bool print_names=true, const std::string format=", ", const int max_files=100);
     Statistics getStatistics();
     /* Reset all data in order to restart a new computation */
     void reset() {clear_data();}
 
     double max(size_t icol); using o2scl::table<std::vector<double> >::max;
     double min(size_t icol); using o2scl::table<std::vector<double> >::min;
+
+    private:
+    std::array<std::string, 3> getFormatStrings(std::string format);
 
   };
 

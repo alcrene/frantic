@@ -87,7 +87,7 @@ Solver<ODEdef, XVector, XSeries>::reset() {
   tEnd = 0;
   dt = 0;
   nSteps = 0;
-  initConditionsSet = false;
+  //initConditionsSet = false;  // Better to use algorithm-specific checkers: some might not need same conditions
 
 
   //odeSeries = XSeries(this->order, "x");
@@ -123,9 +123,10 @@ Solver<ODEdef, XVector, XSeries>::setRange(double begin, double end,
     dt = (tEnd - tBegin) / nSteps;
   }
 
-  odeSeries.inc_maxlines((nSteps + 1) * growFactor);
-  // +1 for the initial condition (which is not a step)
-
+  long minlines=(nSteps + 1) * growFactor; // +1 for the initial condition (which is not a step)
+  if (odeSeries.get_maxlines() < minlines) {
+      odeSeries.inc_maxlines(minlines - odeSeries.get_maxlines());  // inc_maxlines(n) appends n lines to the existing ones
+    }
   setOdeDoneCondition();
 }
 

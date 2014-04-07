@@ -80,9 +80,10 @@ namespace solvers {
 
     virtual ~Solver() {}
 
-	/* Provided for O2scl compatibility */
+	/* Provided for O2scl compatibility
+	   Since O2scl expects int, we round up in case we have fractional order (which happens in stochastics) */
 	virtual int get_order() {
-	  return order;
+	  return int(ceil(order));
 	}
 
     void reset();
@@ -115,7 +116,7 @@ namespace solvers {
     double tEnd = 0;                 // functions can check these are set by testing tBegin == tEnd
     double dt = 0;            // either the step size dt or NumSteps should be computed internally
     unsigned long nSteps = 0;
-	int order; // Provided for O2scl compatibility
+    float order; // Integrator order. Also provided for O2scl compatibility (but it should be converted to int)
     //double initX;                  // If I decide to use this, use 'x0' instead
     // int XDim;                     // Probably should be removed
     bool initConditionsSet = false;

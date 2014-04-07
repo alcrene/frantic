@@ -35,6 +35,7 @@ private:
 
       ptrdiff_t i;
 
+      assert(checkInitialized());
 
       typename ODEdef::func_dX dX(odeSeries);
       dX.setParameters(parameters);
@@ -48,6 +49,15 @@ private:
           t += dt;
           odeSeries.line_of_data(t, x);
       }
+    }
+
+    /* Basic sanity check for initial conditions
+     * Returns false if one of the initialization values is clearly improperly set
+     */
+    bool checkInitialized() {
+      bool initialized = true;
+      if (this->tEnd == this->tBegin or this->dt == 0 or this->nSteps == 0) {initialized = false;}
+      return initialized;
     }
   };
 

@@ -92,6 +92,8 @@ namespace solvers {
 		//o2scl::test_mgr test_mgr;
 		//test_mgr.set_output_level(1);
 
+		assert(checkInitialized());
+
 		dX.setParameters(parameters);
 
 		t = tBegin;
@@ -108,6 +110,15 @@ namespace solvers {
 		}
 
 	  }
+
+          /* Basic sanity check for initial conditions
+           * Returns false if one of the initialization values is clearly improperly set
+           */
+          bool checkInitialized() {
+            bool initialized = true;
+            if (this->tEnd == this->tBegin or this->dt == 0 or this->nSteps == 0) {initialized = false;}
+            return initialized;
+          }
 
 	  //----------------------------------------------------
 	  // code ported from o2scl/ode_rkf45_gsl.h starts here

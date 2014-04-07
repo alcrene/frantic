@@ -31,6 +31,20 @@ namespace cent {
       return plotPtr;
   }
 
+  /* Return a pointer to the plot widget associated with the specified index
+   * (indexes are assigned incrementally in the order plots are added)
+   * Specifying no index returns the most recently added plot.
+   */
+  Plot* tab::getPlot(int index)
+  {
+    assert(index >= -1); assert(index < m_plots.size());
+    if (index == -1) {
+        return m_plots.back();
+    } else {
+        return m_plots[index];
+    }
+  }
+
   QGridLayout* tab::getLayout()
   {
     return layout;
@@ -50,8 +64,7 @@ namespace cent {
 
     //Curve* curveObj = new Curve(series, xcol, ycol);
     curveObj->ylabel = ylabel;
-    //curveObj->setColor(color);
-    //curveObj->plotformat.style = style;
+    curveObj->setPen(color);
 
     m_curves.push_back(curveObj);
 
@@ -82,13 +95,37 @@ namespace cent {
   }
 
 
-  void InfoBox::addInfo(const QString &label, const QString &infoText)
+  void InfoBox::addInfo(const QString& label, const QString& infoText, const QString& name)
   {
     int newRow = rowCount();
     QLabel* labelWidget = new QLabel(label);
     QLabel* infoWidget = new QLabel(infoText);
+
+    if (name == "") {
+        elements.insertMulti("", QList<QLabel*>({labelWidget, infoWidget}));   // insertMulti because we don't want to replace any previous entry with name "".
+      } else {
+        assert(!elements.contains(name)); // Make sure this key doesn't already exist
+        elements.insert(name, QList<QLabel*>({labelWidget, infoWidget}));
+      }
+
     addWidget(labelWidget, newRow, 0);
     addWidget(infoWidget, newRow, 1);
+  }
+
+  void InfoBox::updateInfo(const QString &name, const QString &infoText) {
+    auto el_itr = elements.find(name);
+    assert(el_itr != elements.end());
+    (*el_itr)[1]->setText(infoText);
+  }
+
+  /* Force an immediate repaint of each label in the infobox */
+  void InfoBox::repaint() {
+    foreach (QList<QLabel*> labellst, elements) {
+        foreach(QLabel* label, labellst) {
+            label->repaint();
+          }
+      }
+
   }
 
 } // End of namespace
