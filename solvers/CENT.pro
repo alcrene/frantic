@@ -13,13 +13,15 @@ QMAKE_CXXFLAGS += -std=c++11
 DEFINES += O2SCL_CPP11
 
 SOURCES += solver.tpp \
-    series.tpp
+    series.tpp \
+    histcollection.tpp
 
 HEADERS += solver.h \
     series.h \
     euler.h \
     euler_sttic.h \
     rkf45_gsl.h \
+    histcollection.h
 
 #unix:!symbian {
 #    maemo5 {
