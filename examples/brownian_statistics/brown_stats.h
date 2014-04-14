@@ -75,19 +75,18 @@ struct odeDef
  * Code in accompanying .cpp file
  */
 
-class StticLangevin : public QMainWindow
+class BrownStats : public QMainWindow
 {
   Q_OBJECT
 
 public:
   typedef solvers::Euler_sttic<odeDef, odeDef::XVector, odeDef::XSeries> TSolver;
 
-  explicit StticLangevin(QMainWindow *parent = 0);
-  ~StticLangevin() {}
+  explicit BrownStats(QMainWindow *parent = 0);
+  ~BrownStats() {}
   void run();
 
 private:
-  void setupUI();
 
   odeDef ode;
 

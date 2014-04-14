@@ -19,7 +19,6 @@
 namespace cent {
 
   /* Manage a tab with plot widgets and input fields
-   * TODO: Add memory managements for curves, histograms, etc. that arent attached?
    */
   class tab : public QWidget
   {

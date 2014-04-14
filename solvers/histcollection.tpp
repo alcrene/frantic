@@ -1,5 +1,3 @@
-#include "histcollection.h"
-
 
 template <typename XVector> HistCollection<XVector>::HistCollection(size_t estimated_snapshots) {
   // If estimated_snapshots is provided, reserve appropriate space
@@ -126,7 +124,7 @@ void HistCollection<XVector>::set_bin_edges(o2scl::hist& hist, double t, size_t 
    */
 template <typename XVector>
 void HistCollection<XVector>::dumpToText(const std::string filename, const std::string pathname,
-                                       const bool include_labels, const std::string format, const int max_files) {
+                                         const bool include_labels, const std::string format, const int max_files) {
   std::string outfilename = pathname + filename;
 
   std::fstream outfile(outfilename, std::ios::in);
@@ -153,20 +151,19 @@ void HistCollection<XVector>::dumpToText(const std::string filename, const std::
     std::string sepChar = formatStrings[1];   // 1 or more characters that appears between each element on a line
     std::string tailChar = formatStrings[2];  // 1 or more characters that appears at the end of each line
 
-    // Print comments at the top of the file indicating whether the first row/column are used to indicate the representative values.
-    // First two lines give number of label rows and columns
-    // Following (optional?) comment lines describe what each label line contains
-    outfile << "# Format: state snapshots" << std::endl;
+    // Begin file with description comments
+    outfile << "# Format: State snapshots" << std::endl;
     outfile << "# Details: One histogram per snapshot per state variable component." << std::endl;
-    outfile << "#          Each histogram is preceded by a comment indicating snapshot time";
+    outfile << "#          Each histogram is preceded by a comment indicating snapshot time" << std::endl;
     outfile << "#          Sets of histograms are separated by a comment indicating the component they relate to." << std::endl;
     outfile << "# Row 1: bin edges" << std::endl;
-    outfile << "# Column 1 : time values" << std::endl;
+    outfile << "# Row 2: bin weights" << std::endl;
     outfile << "# -- Parsing info -- " << std::endl;
-    outfile << "# Top row labels: " << 0 << std::endl;
-    outfile << "# Per block labels: " << 0 << std::endl;
-    outfile << "# Per row labels: " << (include_labels ? 1 : 0) << std::endl;
-    outfile << "# Column labels: " << 0 << std::endl;
+    outfile << "# File info lines: " << 0 << std::endl;
+    outfile << "# Block info lines: " << 0 << std::endl;
+    outfile << "# Number of blocks: " << XVector::SizeAtCompileTime << std::endl;
+    outfile << "# Row info lines: " << (include_labels ? 1 : 0) << std::endl;
+    outfile << "# Info columns: " << 0 << std::endl;
 
     for (size_t c=0; c < XVector::SizeAtCompileTime; ++c) {             // c: "component"
       if (include_labels) {outfile << std::endl << "# Component: " << c << std::endl;}

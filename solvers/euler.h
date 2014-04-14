@@ -10,26 +10,28 @@ using std::vector;
 
 namespace solvers {
 
-template <typename ODEdef, typename XVector, typename XSeries>
-class Euler : public Solver<ODEdef, XVector, XSeries>
+template <class Differential>
+class Euler : public Solver<Differential>
 {
 private:
+  using XVector = typename Differential::XVector;
+
     // required because this a template function
-    using Solver<ODEdef, XVector, XSeries>::odeSeries;
-    using Solver<ODEdef, XVector, XSeries>::tBegin;
-    using Solver<ODEdef, XVector, XSeries>::dt;
-    using Solver<ODEdef, XVector, XSeries>::nSteps;
-    using Solver<ODEdef, XVector, XSeries>::ode;
+    using Solver<Differential>::odeSeries;
+    using Solver<Differential>::tBegin;
+    using Solver<Differential>::dt;
+    using Solver<Differential>::nSteps;
+    using Solver<Differential>::ode;
 
  public:
 
-    Euler<ODEdef, XVector, XSeries>(ODEdef& ode):Solver<ODEdef, XVector, XSeries>(ode) {
+    Euler<Differential>():Solver<Differential>() {
         this->noiseShape = ODETypes::NOISE_NONE;
         this->order = 1;
     }
     virtual ~Euler() {}
 
-    void solve(Param parameters) {
+    void solve(typename Differential::Param parameters) {
         // Maybe this should be adapted to interpolate between two time steps, to allow
         // propagation backward in time
 
@@ -37,7 +39,7 @@ private:
 
       assert(checkInitialized());
 
-      typename ODEdef::func_dX dX(odeSeries);
+      Differential dX(odeSeries);
       dX.setParameters(parameters);
 
       double t = tBegin;

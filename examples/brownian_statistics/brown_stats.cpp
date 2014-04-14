@@ -4,8 +4,6 @@
 
 #include <QtGui>
 
-//#include "o2scl/hdf_file.h"
-//#include "o2scl/hdf_io.h"
 
 /* \todo: variable sized histogram limits
  */
@@ -13,7 +11,7 @@
 // constructor below
 
 /* Main run function */
-void StticLangevin::run()
+void BrownStats::run()
 {
   /* Declared in header file:
      odeDef ode;
@@ -114,7 +112,7 @@ odeDef::XVector odeDef::func_dX::initPhi(double t) {
 
 /* Create and position the various widgets
  */
-StticLangevin::StticLangevin(QMainWindow *parent) :
+BrownStats::BrownStats(QMainWindow *parent) :
   QMainWindow(parent)
 {
 

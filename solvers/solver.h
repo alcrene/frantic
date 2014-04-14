@@ -49,7 +49,7 @@ enum NOISE_SHAPE {
 
 namespace solvers {
 
-  typedef std::map<std::string, double> Param;
+  //typedef std::map<std::string, double> Param;  // \todo: Delete. Parameter struct is now defined in problem's Differential class
 
 
   /* XVector should be a class derived from Eigen/Matrix
@@ -57,21 +57,30 @@ namespace solvers {
    * \todo: Implement move semantics
    *        Careful not to break references (e.g. txSeries in dX).
    */
-  template <typename ODEdef, typename XVector, typename XSeries>
+  template <class Differential>
   class Solver
   {
+  protected:
+    using XVector = typename Differential::XVector;
+    using XSeries = typename Differential::XSeries;
+
   public:
     //typedef vector<XVector, aligned_allocator<XVector> > XSeries;
 
     XSeries odeSeries;
     XSeries& odeSeriesRef = odeSeries;  // I can't figure out why I need this, but without it, the runnning .cpp
-                                                // complains that "odeSeries isn't accessible within this context".
+                                        // complains that "odeSeries isn't accessible within this context".
     Series<XVector> odeSeriesError;
     Series<XVector>& odeSeriesErrorRef = odeSeriesError;
 
-    Solver(ODEdef& ode):ode(ode), odeSeries("x"), odeSeriesError("xerr") {
-	  order = 0; //Provided for O2scl compatibility
+    Solver() : Solver("x") {}
+    Solver(std::string varname) : Solver(varname, varname + "err") {}
+    Solver(std::string varname, std::string varerrname)
+      : odeSeries(varname), odeSeriesError(varerrname) {
+      order = 0;     //Provided for O2scl compatibility
     }
+    // \todo This will require move semantics of XSeries
+    // Solver(ODEdef& ode, XSeries odeSeries): odeSeries(odeSeries),
     Solver(const Solver& source) = delete;
     // We disable the copy constructor because it can lead to problems, notably:
     //      - Copying of large result data sets
@@ -101,7 +110,7 @@ namespace solvers {
     // Debugging helpers
     void dump(std::string cmpntName);
 
-    void solve(Param parameters);                /* This function should always be overloaded by the actual solver */
+    void solve(typename Differential::ParamType parameters);                /* This function should always be overloaded by the actual solver */
 
 
 
@@ -123,7 +132,6 @@ namespace solvers {
     ODETypes::NOISE_SHAPE noiseShape;
 
 //    void discretize();
-    ODEdef& ode;
 //    Functor dX;
 
     /* Returns true if the passed time 't' is within the specified bounds for the ODE

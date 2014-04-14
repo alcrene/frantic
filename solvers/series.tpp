@@ -1,8 +1,8 @@
 #ifndef SERIES_TPP
 #define SERIES_TPP
 
-#include <string>
-#include <fstream>
+
+
 /* --------------------------------------------------------------------------
  * Series class
  * --------------------------------------------------------------------------*/
@@ -52,13 +52,11 @@ template <class XVector> void Series<XVector>::line_of_data(double t, XVector x)
  * If the filename exists or cannot be opened, it is appended with a number and retried;
  * this proceded is repeated until file is successfully opened or 'max_files' is reached.
  * \tode: Add number before file extension
- * \todo: Add switch to toggle org-mode style on/off
  * \tode: Add trailing '\' to pathname if necessary
- * \todo: Use Boost Filesystem to test existence of files ?
  */
 template <class XVector>
 void Series<XVector>::dumpToText(const std::string filename, const std::string pathname,
-                                 const bool print_names, const std::string format, const int max_files) {
+                                 const bool include_labels, const std::string format, const int max_files) {
   std::string outfilename = pathname + filename;
 
   std::fstream outfile(outfilename, std::ios::in);
@@ -85,20 +83,38 @@ void Series<XVector>::dumpToText(const std::string filename, const std::string p
     std::string sepChar = formatStrings[1];   // 1 or more characters that appears between each element on a line
     std::string tailChar = formatStrings[2];  // 1 or more characters that appears at the end of each line
 
-    std::string line = headChar;
-    std::string sepline = headChar;
-    for(size_t i=0; i<this->get_ncolumns(); ++i) {
-       line = line + this->get_column_name(i) + sepChar;
-       sepline = sepline + std::string(this->get_column_name(i).length(), '-') + "-+";
+    // Begin file with description comments
+    outfile << "# Format: Time series" << std::endl;
+    outfile << "# Details: One column per time series" << std::endl;
+    outfile << "#          First column are the times" << std::endl;
+    if (include_labels) {
+      outfile << "# Row 1: Column names" << std::endl;
+      outfile << "# Column 1: timepoints" << std::endl;
     }
-    // \todo: substitute sepline[-1] = "|"
+    outfile << "# -- Parsing info -- " << std::endl;
+    outfile << "# File info lines: " << 0 << std::endl;
+    outfile << "# Block info lines: " << (include_labels ? 1 : 0) << std::endl;
+    outfile << "# Number of blocks: " << 1;
+    outfile << "# Row info lines: " << 0 << std::endl;
+    outfile << "# Info columns: " << 1 << std::endl;
 
-    if (print_names) {
-      outfile << line << std::endl;
-      if (format == "org") {
-          outfile << sepline << std::endl;
-        }
+    if (include_labels) {
+      std::string line = headChar;
+      std::string sepline = headChar;
+      for(size_t i=0; i<this->get_ncolumns(); ++i) {
+        line = line + this->get_column_name(i) + sepChar;
+        sepline = sepline + std::string(this->get_column_name(i).length(), '-') + "-+";
       }
+      // \todo: substitute sepline[-1] = "|"
+
+      if (format == "org") {
+        outfile << sepline << std::endl;
+        outfile << line << std::endl;
+        outfile << sepline << std::endl;
+      } else {
+        outfile << line << std::endl;
+      }
+    }
 
     for(size_t i=0; i<this->get_nlines(); ++i) {
         outfile << headChar;
@@ -111,7 +127,7 @@ void Series<XVector>::dumpToText(const std::string filename, const std::string p
 
     outfile.close();
 
-    std::cout << "Table written to \n" + outfilename + "\n";
+    std::cout << "Series written to \n" + outfilename + "\n";
   } else {
       std::cerr << "Unable to open a file to export series data" << std::endl;
   }
@@ -178,7 +194,7 @@ template <class XVector> double Series<XVector>::min(size_t icol) {
    Python prototype code is in interpolation_prototype.py
    =================================================================== */
 
-template <class XVector, int order, int ip> XVector InterpolatedSeries<XVector, order, ip>::interpolate(double t) {
+template <class XVector, int order, int ip> XVector InterpolatedSeries<XVector, order, ip>::interpolate(double t) const {
   //const std::vector<double>& tcol = (*this)[0];
 
   assert(t >= this->get(0,0) and t <= this->get(0,this->get_nlines()-1)); // Ensure we are interpolating within bounds
@@ -216,7 +232,7 @@ template <class XVector, int order, int ip> XVector InterpolatedSeries<XVector, 
          (It used to in this case be able to choose points such that all but
          the first are on same side of interpolated point; I *think* this is fixed now, somewhat overzealously.)
 */
-template <class XVector, int order, int ip> size_t InterpolatedSeries<XVector, order, ip>::getV(double t) {
+template <class XVector, int order, int ip> size_t InterpolatedSeries<XVector, order, ip>::getV(double t) const {
   //const std::vector<double>& tcol = (*this)[0];
   static size_t v;    // temporary placeholder: this->v must not be modified
   static size_t m;    // Maximum value to which we have integrated
@@ -260,7 +276,7 @@ template <class XVector, int order, int ip> size_t InterpolatedSeries<XVector, o
  * \todo: Treat the case of no critical point (.begin() == .end())
  * \todo: Make sure distance between points is large enough to interpolate
  */
-template <class XVector, int order, int ip> typename std::array<double, 2> InterpolatedSeries<XVector, order, ip>::getNeighbourCritPoints(double t) {
+template <class XVector, int order, int ip> typename std::array<double, 2> InterpolatedSeries<XVector, order, ip>::getNeighbourCritPoints(double t) const {
 
   static std::set<double>::iterator CritPointItr;
   CritPointItr = criticalPoints.upper_bound(t); // Returns first element greater than t, or .end() if none
@@ -299,7 +315,7 @@ template <class XVector, int order, int ip> typename std::array<double, 2> Inter
   return std::array<double, 2>({prevCritPoint, nextCritPoint});
 }
 
-template <class XVector, int order, int ip> void InterpolatedSeries<XVector, order, ip>::getLaplaceCoefficients() {
+template <class XVector, int order, int ip> void InterpolatedSeries<XVector, order, ip>::getLaplaceCoefficients() const {
   size_t& v = this->v;
 //  const std::vector<double>& tcol = (*this)[0];
 
@@ -326,7 +342,7 @@ template <class XVector, int order, int ip> void InterpolatedSeries<XVector, ord
   }
 }
 
-template <class XVector, int order, int ip> void InterpolatedSeries<XVector, order, ip>::getNextLaplaceCoefficients() {
+template <class XVector, int order, int ip> void InterpolatedSeries<XVector, order, ip>::getNextLaplaceCoefficients() const {
   size_t& v = this->v;
 //  const std::vector<double>& tcol = (*this)[0];
 
@@ -346,7 +362,7 @@ template <class XVector, int order, int ip> void InterpolatedSeries<XVector, ord
  * This function does no checking, so make sure coefficients are properly calculated beforehand.
  * \todo: Any way to implement this using only temporaries, i.e. in one line without the loop ?
  */
-template <class XVector, int order, int ip> XVector InterpolatedSeries<XVector, order, ip>::computePoly(double t) {
+template <class XVector, int order, int ip> XVector InterpolatedSeries<XVector, order, ip>::computePoly(double t) const {
 //  const std::vector<double>& tcol = (*this)[0];
 
   XVector b = this->coeff[ip - 1];

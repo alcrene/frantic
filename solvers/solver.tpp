@@ -9,7 +9,7 @@
 /* Return an std::vector with the discretized time steps
  * If stepMultiplier is specified, insert the given number of steps between each step used in the solving algorithm.
  */
-template <class ODEdef, class XVector, class XSeries> vector<double> Solver<ODEdef, XVector, XSeries>::getTSeriesVector(int stepMultiplier){
+template <class Differential> vector<double> Solver<Differential>::getTSeriesVector(int stepMultiplier){
 
     if ((stepMultiplier == 0) or (stepMultiplier == 1)) {
 	  return odeSeries["t"];
@@ -35,14 +35,14 @@ template <class ODEdef, class XVector, class XSeries> vector<double> Solver<ODEd
 /* Return an std::vector with the time series of the specified X component
    0 specifies the first component
  */
-template <class ODEdef, class XVector, class XSeries> vector<double> Solver<ODEdef, XVector, XSeries>::getXSeriesVector(ptrdiff_t component) {
+template <class Differential> vector<double> Solver<Differential>::getXSeriesVector(ptrdiff_t component) {
     return odeSeries[component + 1];
 }
 
 /* Return an std::vector with the time series of the given x timeseries
    Obsolete ?
  */
-/*template <class ODEdef, class XVector, class XSeries> vector<double> Solver<ODEdef, XVector, XSeries>::getXSeriesVector(ptrdiff_t component, XSeries xseries) {
+/*template <class Differential> vector<double> Solver<Differential>::getXSeriesVector(ptrdiff_t component, XSeries xseries) {
     vector<double> vect;
 
     vect.reserve(xseries.size());
@@ -55,7 +55,7 @@ template <class ODEdef, class XVector, class XSeries> vector<double> Solver<ODEd
 /* Evaluate a function over the solver's timesteps
  * TODO: use getTSeries to allow eval over a finer set of points
  */
-template <class ODEdef, class XVector, class XSeries> Series<XVector> Solver<ODEdef, XVector, XSeries>::evalFunction(std::function<XVector(const double&)> f) {
+template <class Differential> Series<typename Differential::XVector> Solver<Differential>::evalFunction(std::function<XVector(const double&)> f) {
   Series<double> result(odeSeries.get_nlines());
 
   for(auto t_iter=odeSeries[0].begin(); t_iter != odeSeries.end(); ++t_iter) {
@@ -68,7 +68,7 @@ template <class ODEdef, class XVector, class XSeries> Series<XVector> Solver<ODE
 /* Return an std::vector for the time series of a function, evaluated at the same points as the solving algorithm
  * TODO: use getTSeries to allow eval over a finer set of points
  */
-template <class ODEdef, class XVector, class XSeries> vector<double> Solver<ODEdef, XVector, XSeries>::evalFunctionComponent(ptrdiff_t component, std::function<XVector(const double&)> f) {
+template <class Differential> vector<double> Solver<Differential>::evalFunctionComponent(ptrdiff_t component, std::function<XVector(const double&)> f) {
   std::vector<XVector, Eigen::aligned_allocator<XVector> > result;
 
   result.reserve(odeSeries.size());
@@ -81,8 +81,8 @@ template <class ODEdef, class XVector, class XSeries> vector<double> Solver<ODEd
 
 /* Reset the state data. In particular, this clears the series table
  */
-template <class ODEdef, class XVector, class XSeries> void
-Solver<ODEdef, XVector, XSeries>::reset() {
+template <class Differential> void
+Solver<Differential>::reset() {
   tBegin = 0;
   tEnd = 0;
   dt = 0;
@@ -105,8 +105,8 @@ Solver<ODEdef, XVector, XSeries>::reset() {
  * Calculated number of steps is multiplied by 'growFactor', allowing to reserve
  *   extra memory; useful if it is known that an adaptive stepper will add steps
  */
-template <class ODEdef, class XVector, class XSeries> void
-Solver<ODEdef, XVector, XSeries>::setRange(double begin, double end,
+template <class Differential> void
+Solver<Differential>::setRange(double begin, double end,
                                    double stepSize, double growFactor) {
   double remainder;
 
@@ -136,8 +136,8 @@ Solver<ODEdef, XVector, XSeries>::setRange(double begin, double end,
  * Calculated number of steps is multiplied by 'growFactor', allowing to reserve
  *   extra memory; useful if it is known that an adaptive stepper will add steps
  */
-template <class ODEdef, class XVector, class XSeries>
-void Solver<ODEdef, XVector, XSeries>::setRange(double begin, double end,
+template <class Differential>
+void Solver<Differential>::setRange(double begin, double end,
                                        int numSteps, double growFactor) {
   assert((end != begin) and (numSteps != 0));
 
@@ -157,7 +157,7 @@ void Solver<ODEdef, XVector, XSeries>::setRange(double begin, double end,
  *  - sanity check on stepping bounds
  *  - fill independent column of ODE series with the time step values
  */
-/*template <class ODEdef, class XVector, class XSeries> void Solver<ODEdef, XVector, XSeries>::discretize() {
+/*template <class Differential> void Solver<Differential>::discretize() {
   ptrdiff_t i;
 
   // Make sure the time range is properly initialized
@@ -180,7 +180,7 @@ void Solver<ODEdef, XVector, XSeries>::setRange(double begin, double end,
          - allow multiple vector components
          - allow partial row dump (rows n to m; step k)
  */
-template <class ODEdef, class XVector, class XSeries> void Solver<ODEdef, XVector, XSeries>::dump(std::string cmpntName)
+template <class Differential> void Solver<Differential>::dump(std::string cmpntName)
 {
   //  ptrdiff_t i = component;
   std::cout << cmpntName << ": " << std::endl;;
@@ -194,7 +194,7 @@ template <class ODEdef, class XVector, class XSeries> void Solver<ODEdef, XVecto
  *
  * This function should always be overloaded by the specific solver class
  */
-template <class ODEdef, class XVector, class XSeries> void Solver<ODEdef, XVector, XSeries>::solve(Param parameters) {
+template <class Differential> void Solver<Differential>::solve(typename Differential::ParamType parameters) {
   ptrdiff_t i;
 
   // Discretize the continuous given range

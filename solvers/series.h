@@ -4,14 +4,14 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-
+#include <assert.h>
 #include <vector>
 #include <array>
 #include <set>
 #include <iterator>        // Required for std::next
 //#include <algorithm.h>   // Required for std::lower_bound
 
-#include <assert.h>
+#include "o2scl/table.h"
 
 namespace solvers {
 
@@ -21,7 +21,8 @@ namespace solvers {
    * is optimised specifically for repeated sequential calls, as is the case
    * with differential equation integrators.
    *
-   * \todo: Add macro for Eigen data members ? (might still be necessary for creation with 'new'
+   * \todo: Implement move semantics constructor
+   *        Add macro for Eigen data members ? (might still be necessary for creation with 'new'
    * 
    */
   template <class XVector>
@@ -41,11 +42,13 @@ namespace solvers {
     };
 
     Series(std::string varname="x", size_t cmaxlines=0);
-    Series& operator=(const Series& other) {o2scl::table<std::vector<double> >::operator=(other);}  // Copy assignment
+    Series(const Series& source) = delete;
+    // \todo: Implement rvalue copy assignment with move semantics
+    // Series& operator=(const Series& other) {o2scl::table<std::vector<double> >::operator=(other);}  // Copy assignment
     void line_of_data(double t, XVector x);
     XVector getVectorAtTime(const size_t t_idx) const;
     void dumpToText(const std::string filename, const std::string pathname="",
-                    const bool print_names=true, const std::string format=", ", const int max_files=100);
+                    const bool include_labels=true, const std::string format=", ", const int max_files=100);
     Statistics getStatistics();
     /* Reset all data in order to restart a new computation */
     void reset() {clear_data();}
@@ -128,7 +131,7 @@ namespace solvers {
 //      }
     };
 
-    XVector interpolate(double t);
+    XVector interpolate(double t) const;
     void addPrimaryCriticalPoint(const double point, const double delay) {criticalPoints.addCriticalPoint(point, delay, order);}
     void addSecondaryCriticalPoint(const double point, const double delay) {criticalPoints.addCriticialPOint(point, delay, order - 1);}
     /* Reset all data in order to restart a new computation
@@ -147,15 +150,15 @@ namespace solvers {
 
     private:
 
-    size_t v = 0;  // *Don't* use v=-1 : size_t is strictly positive
-    std::array<XVector, ip> coeff;
+    mutable size_t v = 0;                           // Avoid using v=-1 : size_t is strictly positive
+    mutable std::array<XVector, ip> coeff;          // Making these two internal variables mutable allows calling interpolate as a const function
     CriticalPointList criticalPoints;
 
-    size_t getV(double t);
-    std::array<double, 2> getNeighbourCritPoints(double t);
-    void getLaplaceCoefficients();
-    void getNextLaplaceCoefficients();
-    XVector computePoly(double t);
+    size_t getV(double t) const;
+    std::array<double, 2> getNeighbourCritPoints(double t) const;
+    void getLaplaceCoefficients() const;
+    void getNextLaplaceCoefficients() const;
+    XVector computePoly(double t) const;
 
     };
 

@@ -1,6 +1,15 @@
 #ifndef HISTCOLLECTION_H
 #define HISTCOLLECTION_H
 
+#include <assert.h>
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <array>
+#include <vector>
+
+#include "o2scl/hist.h"
+
 namespace cent {
   /* Container for a series of snapshot histograms
    * Histograms refer to a state when the indexing variable (typically time) is a certain value

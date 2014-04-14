@@ -6,7 +6,7 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    StticLangevin mainUI;
+    BrownStats mainUI;
     mainUI.show();
 
     mainUI.run();

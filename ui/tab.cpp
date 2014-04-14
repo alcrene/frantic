@@ -74,6 +74,7 @@ namespace cent {
   Curve* tab::getCurve(ptrdiff_t index)
   /* Return a pointer to the curve at the specified index */
   {
+    assert(index >= 0  and  index < m_curves.size());
       return m_curves[index];
   }
 
