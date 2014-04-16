@@ -10,6 +10,8 @@
 #include <QVector>
 #include <QGridLayout>
 #include <QLabel>
+#include <QLineEdit>
+#include <QPushButton>
 #include <qwt6/qwt_plot.h>
 
 #include "curve.h"
@@ -35,22 +37,11 @@ namespace cent {
 
       QGridLayout* getLayout();
 
-      // Objects to insert in containers
-  //    Curve* addCurve(std::vector<double> xdata, std::vector<double> ydata,
-      Curve* addCurve(o2scl::table<std::vector<double> >& series, size_t xcol, size_t ycol,
-                      QString ylabel="",
-                      QColor color=Qt::black, std::string style="");   // Add a new curve object
-      Curve* getCurve(ptrdiff_t index);   // Get pointer to a curve object, to allow setting its properties
-      Curve* getCurve();
-      Histogram* addHist(const QString& title = QString::null);                 //
-
 
    private:
       Q_OBJECT
 
       QVector<Plot*> m_plots;          // Collection of plots
-      QVector<Curve*> m_curves;        // Collection of curves that can be added to a plot
-      QVector<Histogram*> m_histograms;   // Collection of histograms that can be added to a plot
       QGridLayout* layout;
 
   signals:
@@ -75,6 +66,30 @@ namespace cent {
 
     QHash<QString, QList<QLabel*> > elements;  // Stores referencs to the info elements so they can be later modified
                                                // label/infoText widget* pairs as indexed by name; if no name is specified, the pair cannot be later retrieved.
+  };
+
+  /* Provides an easy to use layout block for parameter tuning widgets
+   * (label/textbox pairs, sliders (todo), buttons)
+   */
+  class InputBox : public QGridLayout
+  {
+  public:
+    struct InputPair {   // Contains pointers to the label and text input box(es?) of one line
+      QLabel* label;
+      QLineEdit* box;
+      InputPair(QLabel* label, QLineEdit* box) : label(label), box(box){}
+    };
+
+    QLineEdit* addInputLine(const QString& label, const QString& name="", const int minWidth=30);
+    QLineEdit* addInputLine(const QList<QString>& labels, const QList<QString>& names=QList<QString>(), const int minWidth=30);
+    QString getValueString(const QString& name) const;
+    double getValue(const QString& name) const;
+    void setValue(const QString& name, const QString& value);
+    void setValue(const QString& name, const int value);
+    void setValue(const QString& name, const double value);
+    QPushButton* addButton(const QString& label, const QString& name="");
+
+    QHash<QString, InputPair > elements;
   };
 
 } // End of namespace

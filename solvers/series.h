@@ -67,7 +67,7 @@ namespace solvers {
        This class tacitly assumes that we are dealing with delayed DE series data
        'order' is the (min) interpolation order, 'ip' the number of nodes used for interpolation
        'order' is mostly used to add the correct number number of associated critical points;
-       in a DE scheme, it should match the order of the integrator.
+       in a DE scheme, it should be at least as large as the order of the integrator.
        \todo: Do we need to use special Eigen STL allocator for coeff ?
        ====================================================================== */
   template <class XVector, int order, int ip=4>
@@ -133,7 +133,7 @@ namespace solvers {
 
     XVector interpolate(double t) const;
     void addPrimaryCriticalPoint(const double point, const double delay) {criticalPoints.addCriticalPoint(point, delay, order);}
-    void addSecondaryCriticalPoint(const double point, const double delay) {criticalPoints.addCriticialPOint(point, delay, order - 1);}
+    void addSecondaryCriticalPoint(const double point, const double delay) {criticalPoints.addCriticalPoint(point, delay, order - 1);}
     /* Reset all data in order to restart a new computation
      * Everything is reinitialized to 0 or empty, except the interpolation order, which is assumed to be the same.
      * If interpolation order is different, it should be changed separately.

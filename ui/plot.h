@@ -14,15 +14,13 @@ namespace cent {
 
   class Plot : public QwtPlot
   {
-      Q_OBJECT
+    Q_OBJECT
   public:
-      explicit Plot(QWidget *parent = 0);
-      void attachCurve(Curve* curve);
-      void attachHist(Histogram* histogram);
+    explicit Plot(QWidget *parent = 0);
+    void clear();
 
   private:
-      std::vector<Curve*> m_curves;
-      std::vector<Histogram*> m_histograms;
+
   signals:
 
   public slots:

@@ -3,32 +3,32 @@
 namespace cent {
 
   tab::tab(QWidget *parent) :
-      QWidget(parent)
+    QWidget(parent)
   {
-      layout = new QGridLayout;
+    layout = new QGridLayout;
   }
 
   /* \todo Get colour from plot.color and set it
    */
   void tab::show()
   {
-      // Put the plot widgets on the tab
-      setLayout(layout);
+    // Put the plot widgets on the tab
+    setLayout(layout);
 
-      // Display the plots
-      for(ptrdiff_t i=0; i < m_plots.size(); ++i) {
-          m_plots[i]->replot();
-      }
-      /* Add draw all plots (option?) ? */
+    // Display the plots
+    for(ptrdiff_t i=0; i < m_plots.size(); ++i) {
+      m_plots[i]->replot();
+    }
+    /* Add draw all plots (option?) ? */
   }
 
   Plot* tab::addPlot(int row, int column, int rowSpan, int columnSpan)
   {
-      Plot* plotPtr = new Plot(this);
-      layout->addWidget(plotPtr, row, column, rowSpan, columnSpan);
-      m_plots.push_back(plotPtr);
+    Plot* plotPtr = new Plot(this);
+    layout->addWidget(plotPtr, row, column, rowSpan, columnSpan);
+    m_plots.push_back(plotPtr);
 
-      return plotPtr;
+    return plotPtr;
   }
 
   /* Return a pointer to the plot widget associated with the specified index
@@ -39,60 +39,15 @@ namespace cent {
   {
     assert(index >= -1); assert(index < m_plots.size());
     if (index == -1) {
-        return m_plots.back();
+      return m_plots.back();
     } else {
-        return m_plots[index];
+      return m_plots[index];
     }
   }
 
   QGridLayout* tab::getLayout()
   {
     return layout;
-  }
-
-  //Curve* tab::addCurve(std::vector<double> xdata, std::vector<double> ydata,
-  /* \todo: The way this is done seems like a hackish cludge to get what I want; there must be a better way
-   */
-  Curve* tab::addCurve(o2scl::table<std::vector<double> >& series, size_t xcol, size_t ycol,
-                          QString ylabel, QColor color, std::string style)
-  {
-    std::vector<double>::const_iterator xdata_itr = series.get_column(series.get_column_name(xcol)).begin();
-    std::vector<double>::const_iterator ydata_itr = series.get_column(series.get_column_name(ycol)).begin();
-    std::vector<double> xdata(xdata_itr, xdata_itr + series.get_nlines());
-    std::vector<double> ydata(ydata_itr, ydata_itr + series.get_nlines());
-    Curve* curveObj = new Curve(xdata, ydata);
-
-    //Curve* curveObj = new Curve(series, xcol, ycol);
-    curveObj->ylabel = ylabel;
-    curveObj->setPen(color);
-
-    m_curves.push_back(curveObj);
-
-    return curveObj;
-  }
-
-  Curve* tab::getCurve(ptrdiff_t index)
-  /* Return a pointer to the curve at the specified index */
-  {
-    assert(index >= 0  and  index < m_curves.size());
-      return m_curves[index];
-  }
-
-  Curve* tab::getCurve()
-  /* Return a pointer to the current curve */
-  {
-      assert(!m_curves.empty());
-      return m_curves.back();
-  }
-
-
-  Histogram* tab::addHist(const QString& title)
-  {
-    Histogram* histObj = new Histogram(title);
-
-    m_histograms.push_back(histObj);
-
-    return histObj;
   }
 
 
@@ -103,11 +58,11 @@ namespace cent {
     QLabel* infoWidget = new QLabel(infoText);
 
     if (name == "") {
-        elements.insertMulti("", QList<QLabel*>({labelWidget, infoWidget}));   // insertMulti because we don't want to replace any previous entry with name "".
-      } else {
-        assert(!elements.contains(name)); // Make sure this key doesn't already exist
-        elements.insert(name, QList<QLabel*>({labelWidget, infoWidget}));
-      }
+      elements.insertMulti("", QList<QLabel*>({labelWidget, infoWidget}));   // insertMulti because we don't want to replace any previous entry with name "".
+    } else {
+      assert(!elements.contains(name)); // Make sure this key doesn't already exist
+      elements.insert(name, QList<QLabel*>({labelWidget, infoWidget}));
+    }
 
     addWidget(labelWidget, newRow, 0);
     addWidget(infoWidget, newRow, 1);
@@ -122,11 +77,118 @@ namespace cent {
   /* Force an immediate repaint of each label in the infobox */
   void InfoBox::repaint() {
     foreach (QList<QLabel*> labellst, elements) {
-        foreach(QLabel* label, labellst) {
-            label->repaint();
-          }
+      foreach(QLabel* label, labellst) {
+        label->repaint();
       }
+    }
 
   }
 
+  /* Add an input line to the layout
+   * Returns a pointer to the created QLineEdit widget
+   * 'minWidth' specifies the minimum width of the LineEdit box
+   */
+  QLineEdit* InputBox::addInputLine(const QString& label, const QString& name, const int minWidth)
+  {
+    int newRow = rowCount();
+    QLabel* labelWidget = new QLabel(label);
+    QLineEdit* lineWidget = new QLineEdit();
+
+    if (name == "") {
+      elements.insertMulti("", InputPair(labelWidget, lineWidget));   // insertMulti because we don't want to replace any previous entry with name "".
+    } else {
+      assert(!elements.contains(name)); // Make sure this key doesn't already exist
+      elements.insert(name, InputPair(labelWidget, lineWidget));
+    }
+
+    addWidget(labelWidget, newRow, 0);
+    addWidget(lineWidget, newRow, 1);
+
+    if (columnMinimumWidth(1) < minWidth) {
+      setColumnMinimumWidth(1, minWidth);
+    }
+
+    return lineWidget;
+  }
+
+  /* Add a collection of input pairs on the same line
+   * 'names' must either be left unspecified, or have the same size as 'labels'
+   * 'minWidth' specifies the minimum width of the LineEdit boxes
+   */
+  QLineEdit* InputBox::addInputLine(const QList<QString>& labels, const QList<QString>& names, const int minWidth)
+  {
+    if (names.size() > 0) {assert(labels.size() == names.size());}
+
+    int newRow = rowCount();
+
+    QLabel* labelWidget;
+    QLineEdit* lineWidget;
+    for (int i=0; i<labels.size(); ++i) {
+      labelWidget = new QLabel(labels[i]);
+      lineWidget = new QLineEdit();
+
+      if (names[i] == "") {
+        elements.insertMulti("", InputPair(labelWidget, lineWidget));   // insertMulti because we don't want to replace any previous entry with name "".
+      } else {
+        assert(!elements.contains(names[i])); // Make sure this key doesn't already exist
+        elements.insert(names[i], InputPair(labelWidget, lineWidget));
+      }
+
+      addWidget(labelWidget, newRow, 2*i);
+      addWidget(lineWidget, newRow, 2*i + 1);
+
+      if (columnMinimumWidth(2*i + 1) < minWidth) {
+        setColumnMinimumWidth(2*i + 1, minWidth);
+      }
+    }
+  }
+
+  /* Return the value of the text box (QLineEdit) associated with 'name'
+   */
+  QString InputBox::getValueString(const QString& name) const
+  {
+    auto el_itr = elements.find(name);
+    assert(el_itr != elements.end());
+    return el_itr->box->text();
+  }
+  double InputBox::getValue(const QString& name) const
+  {
+    QString strVal = getValueString(name);
+    return strVal.toDouble();
+  }
+
+  /* Set the specified input box's text to 'value'
+   */
+  void InputBox::setValue(const QString& name, const QString& value)
+  {
+    auto el_itr = elements.find(name);
+    assert(el_itr != elements.end());
+    el_itr->box->setText(value);
+  }
+  void InputBox::setValue(const QString& name, const int value)
+  {
+    auto el_itr = elements.find(name);
+    assert(el_itr != elements.end());
+    el_itr->box->setText(QString("%1").arg(value));
+  }
+  void InputBox::setValue(const QString& name, const double value)
+  {
+    auto el_itr = elements.find(name);
+    assert(el_itr != elements.end());
+    el_itr->box->setText(QString("%1").arg(value));
+  }
+
+  /* Add a button to the layout; this button must still be connected
+   * Returns a pointer to the button widget
+   * \todo: Accessing by name
+   */
+  QPushButton* InputBox::addButton(const QString& label, const QString& name)
+  {
+    int newRow = rowCount();
+    QPushButton* button = new QPushButton(label);
+
+    addWidget(button, newRow, 0, 1, 2, Qt::AlignCenter);  // \todo Set a max size to button ?
+
+    return button;
+  }
 } // End of namespace

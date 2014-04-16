@@ -94,18 +94,20 @@ void Series<XVector>::dumpToText(const std::string filename, const std::string p
     outfile << "# -- Parsing info -- " << std::endl;
     outfile << "# File info lines: " << 0 << std::endl;
     outfile << "# Block info lines: " << (include_labels ? 1 : 0) << std::endl;
-    outfile << "# Number of blocks: " << 1;
+    outfile << "# Number of blocks: " << 1 << std::endl;
     outfile << "# Row info lines: " << 0 << std::endl;
     outfile << "# Info columns: " << 1 << std::endl;
 
+    outfile << std::endl;
     if (include_labels) {
       std::string line = headChar;
       std::string sepline = headChar;
-      for(size_t i=0; i<this->get_ncolumns(); ++i) {
+      for(size_t i=0; i<this->get_ncolumns() - 1; ++i) {
         line = line + this->get_column_name(i) + sepChar;
         sepline = sepline + std::string(this->get_column_name(i).length(), '-') + "-+";
       }
-      // \todo: substitute sepline[-1] = "|"
+      line = line + this->get_column_name(this->get_ncolumns() - 1) + tailChar; // Don't put a sep character for last column
+      sepline = sepline + std::string(this->get_column_name(this->get_ncolumns() - 1).length(), '-') + tailChar;
 
       if (format == "org") {
         outfile << sepline << std::endl;

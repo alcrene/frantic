@@ -29,6 +29,8 @@ namespace cent {
    public:
     Curve(const std::vector<double>& xdata, const std::vector<double>& ydata);
     Curve(const o2scl::table<std::vector<double> >& series, const size_t xcol, const size_t ycol);
+    Curve(o2scl::table<std::vector<double> >& series, size_t xcol, size_t ycol,
+          QColor color=Qt::black, std::string style="");
 
     QString xlabel;
     QString ylabel;
