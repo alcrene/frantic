@@ -14,14 +14,16 @@ DEFINES += O2SCL_CPP11
 
 SOURCES += solver.tpp \
     series.tpp \
-    histcollection.tpp
+    histcollection.tpp \
+    io.cpp
 
 HEADERS += solver.h \
     series.h \
     euler.h \
     euler_sttic.h \
     rkf45_gsl.h \
-    histcollection.h
+    histcollection.h \
+    io.h
 
 #unix:!symbian {
 #    maemo5 {

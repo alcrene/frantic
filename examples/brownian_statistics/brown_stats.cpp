@@ -32,7 +32,7 @@ void BrownStats::run()
   int nxbins = 50;
 
   //std::function<std::array<double, 2>(double, size_t)> binFunction = [](int t, size_t c){return std::array<double, 2>({-7*sqrt(t), 7*sqrt(t)});};
-  std::function<std::array<double, 2>(double, size_t)> binFunction = [](int t, size_t c){return std::array<double, 2>({-17, 17});};
+  std::function<std::array<double, 2>(double, size_t)> binFunction = [](int t, size_t c){return std::array<double, 2>({-17, 17});};  // Temporary hack until such a function is properly written
 
   solvers::Param parameters;
 

@@ -51,8 +51,8 @@ template <class XVector> void Series<XVector>::line_of_data(double t, XVector x)
  * To save in another directory, specify a value for 'pathname'.
  * If the filename exists or cannot be opened, it is appended with a number and retried;
  * this proceded is repeated until file is successfully opened or 'max_files' is reached.
- * \tode: Add number before file extension
- * \tode: Add trailing '\' to pathname if necessary
+ * \todo: Add number before file extension
+ * \todo: Add trailing '\' to pathname if necessary
  */
 template <class XVector>
 void Series<XVector>::dumpToText(const std::string filename, const std::string pathname,
@@ -201,10 +201,18 @@ template <class XVector, int order, int ip> XVector InterpolatedSeries<XVector, 
 
   assert(t >= this->get(0,0) and t <= this->get(0,this->get_nlines()-1)); // Ensure we are interpolating within bounds
 
-  // \todo: Might be a gain in speed if this is written from scratch (see docs), especially if we start from current position
-  size_t t_found_idx = this->ordered_lookup("t", t);
+  size_t t_found_idx;
+  if (t == 0) {
+    // If we set delay at 0, "t" column is filled with zeros and ordered_lookup fails for t=0. This hackishly circumvents that
+    // \todo: Make a cleaner solution
+    t_found_idx = 0;
+  } else {
+    // \todo: Might be a gain in speed if this is written from scratch (see docs), especially if we start from current position
+    //        Could also avoid problem of multiple 0 times, by returning first found one
+    t_found_idx = this->ordered_lookup("t", t);
+  }
   if (this->get(0, t_found_idx) == t) {
-	return this->getVectorAtTime(t_found_idx);
+    return this->getVectorAtTime(t_found_idx);
   }
 
  /* if (t_found_idx > 0) {
