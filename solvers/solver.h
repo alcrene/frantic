@@ -28,6 +28,7 @@
 #include <eigen3/Eigen/StdVector>
 
 #include "solvers/series.h"
+#include "io.h"
 
 /* \todo: Mark appropriate functions as const (get__, for example)
  * \todo: Use child class for InterpolatedSolver, similar as InterpolatedSeries ?
@@ -110,7 +111,8 @@ namespace solvers {
     // Debugging helpers
     void dump(std::string cmpntName);
 
-    void solve(typename Differential::ParamType parameters);                /* This function should always be overloaded by the actual solver */
+    // \todo: When Differential class is moved to CENT, use Differential call signature
+    void solve(cent::ParameterMap& parameters);                /* This function should always be overloaded by the actual solver */
 
 
 

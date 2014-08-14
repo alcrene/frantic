@@ -194,7 +194,7 @@ template <class Differential> void Solver<Differential>::dump(std::string cmpntN
  *
  * This function should always be overloaded by the specific solver class
  */
-template <class Differential> void Solver<Differential>::solve(typename Differential::ParamType parameters) {
+template <class Differential> void Solver<Differential>::solve(cent::ParameterMap& parameters) {
   ptrdiff_t i;
 
   // Discretize the continuous given range

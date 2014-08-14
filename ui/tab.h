@@ -80,6 +80,8 @@ namespace cent {
       InputPair(QLabel* label, QLineEdit* box) : label(label), box(box){}
     };
 
+    //InputBox(parameters);
+
     QLineEdit* addInputLine(const QString& label, const QString& name="", const int minWidth=30);
     QLineEdit* addInputLine(const QList<QString>& labels, const QList<QString>& names=QList<QString>(), const int minWidth=30);
     QString getValueString(const QString& name) const;

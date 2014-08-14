@@ -84,6 +84,11 @@ namespace cent {
 
   }
 
+//  InputBox::InputBox(parameters)
+//  {
+
+//  }
+
   /* Add an input line to the layout
    * Returns a pointer to the created QLineEdit widget
    * 'minWidth' specifies the minimum width of the LineEdit box
@@ -141,6 +146,8 @@ namespace cent {
         setColumnMinimumWidth(2*i + 1, minWidth);
       }
     }
+
+    return lineWidget;
   }
 
   /* Return the value of the text box (QLineEdit) associated with 'name'

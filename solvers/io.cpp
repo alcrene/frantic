@@ -4,35 +4,41 @@
  * If the filename exists or cannot be opened, it is appended with a number and retried;
  * this process is repeated until file is successfully opened or 'max_files' is reached.
  * \todo: Add number before file extension
- * \todo: Add trailing '\' to pathname if necessary
+ * \todo: Add trailing '/' to pathname if necessary
  * \todo: Should .c_str() be used ?
  */
-std::fstream cent::getFreeFilenameToWrite(std::string filename, std::string directory,
-                                          const int max_files)
+namespace cent
 {
-  std::string outfilename = directory + filename;
+  std::string getFreeFilenameToWrite(std::string filename, std::string directory,
+                                      const int max_files)
+  {
+    directory = directory + "/";
+    std::string outfilename = directory + filename;
 
-  std::fstream outfile(outfilename, std::ios::in);
+    std::fstream outfile(outfilename, std::ios::in);
 
-  if (outfile.is_open()) {
+    if (outfile.is_open()) {
       // File exists; try appending numbers to find non-existing one
       for(int i=1; i<= max_files; ++i) {
-          outfile.close();
-          outfilename = pathname + filename + "_" + std::to_string(i);
-          outfile.open(outfilename, std::ios::in);
-          if (!outfile.is_open()) {
-              break;
-          }
+        outfile.close();
+        outfilename = directory + filename + "_" + std::to_string(i);
+        outfile.open(outfilename, std::ios::in);
+        if (!outfile.is_open()) {
+          break;
+        }
       }
+    }
+
+    if (!outfile.is_open()) {
+      // Successfully found a free filename
+      outfile.close();
+//      outfile.open(outfilename.c_str(), std::ios::out);
+    } else {
+      outfile.close();
+      outfilename = "";
+    }
+
+    return outfilename;
   }
 
-  if (!outfile.is_open()) {
-    // Successfully found a free filename
-    outfile.close();
-    outfile.open(outfilename.c_str(), std::ios::out);
-  } else {
-    outfile.close();
-  }
-
-  return outfile;
 }

@@ -22,8 +22,11 @@ namespace solvers {
     }
     virtual ~Euler_sttic() {}
 
-    /* Overloaded solve function which initializes creates a local dX total derivative from the specified parameters */
-    void solve(const typename Differential::ParamType& parameters) {
+    /* Overloaded solve function which initializes creates a local dX total derivative from the specified parameters
+       **** BUGY **** : x0 is not set this way, which will almost always be a problem
+     */
+    void solve(const cent::ParameterMap& parameters) {
+      std::cerr << "This call to 'solve' is buggy. Please use another or, if you need this one, fix it." << std::endl;
       solve(Differential(this->odeSeries, parameters));
     }
 
