@@ -84,16 +84,25 @@ namespace cent {
 
   }
 
-//  InputBox::InputBox(parameters)
-//  {
-
-//  }
+  InputBox::InputBox(cent::ParameterMap parameters)
+  {
+    for (auto itr = parameters.begin(); itr != parameters.end(); ++itr) {
+      addInputLine(QString::fromUtf8(itr->second.display_str.c_str()),
+                   QString::fromUtf8(itr->first.c_str()),
+                   QString(itr->second.get_value().c_str()),
+                   //QString(boost::apply_visitor(cent::Parameter::value_to_string(), itr->second.value).c_str()),
+                   !(itr->second.modifiable)
+                   );
+    }
+  }
 
   /* Add an input line to the layout
    * Returns a pointer to the created QLineEdit widget
    * 'minWidth' specifies the minimum width of the LineEdit box
    */
-  QLineEdit* InputBox::addInputLine(const QString& label, const QString& name, const int minWidth)
+  QLineEdit* InputBox::addInputLine(const QString& label, const QString& name,
+                                    const QString& default_value, const bool readonly,
+                                    const int minWidth)
   {
     int newRow = rowCount();
     QLabel* labelWidget = new QLabel(label);
@@ -112,6 +121,9 @@ namespace cent {
     if (columnMinimumWidth(1) < minWidth) {
       setColumnMinimumWidth(1, minWidth);
     }
+
+    lineWidget->setText(default_value);
+    lineWidget->setReadOnly(readonly);
 
     return lineWidget;
   }
@@ -197,5 +209,31 @@ namespace cent {
     addWidget(button, newRow, 0, 1, 2, Qt::AlignCenter);  // \todo Set a max size to button ?
 
     return button;
+  }
+
+  /*
+   * \todo: return proper parameter type
+   *        -> could do this with template function to which we give Parameter::TVal
+   */
+  cent::ParameterMap InputBox::get_parameters() const
+  {
+    cent::ParameterMap parameters;
+
+    QHashIterator<QString, InputBox::InputPair> itr(elements);
+    while(itr.hasNext()) {
+      itr.next();
+      parameters.add_parameter(itr.key().toStdString(), itr.value().label->text().toStdString(),
+                               itr.value().box->text().toDouble());
+    }
+
+    return parameters;
+  }
+
+  void InputBox::repaint()
+  {
+    foreach (InputPair pair, elements) {
+      pair.label->repaint();
+      pair.box->repaint();
+    }
   }
 } // End of namespace

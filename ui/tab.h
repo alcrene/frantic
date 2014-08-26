@@ -17,6 +17,7 @@
 #include "curve.h"
 #include "histogram.h"
 #include "plot.h"
+#include "../solvers/io.h"
 
 namespace cent {
 
@@ -50,6 +51,26 @@ namespace cent {
 
   };
 
+//  class ParameterBox : public QGridLayout
+//  {
+//  private:
+//    cent::ParameterMap parameter_map;
+
+//  public:
+//    struct InputPair {   // Contains pointers to the label and text input box(es?) of one line
+//      QLabel* label;
+//      QLineEdit* box;
+//      InputPair(QLabel* label, QLineEdit* box) : label(label), box(box){}
+//    };
+
+//    ParameterBox () {}
+//    ParameterBox (cent::ParameterMap);
+//    cent::ParameterMap get_parameters() {}
+//    cent::Parameter get_parameter(std::string key);
+
+//    QHash<QString, InputPair > elements;
+//  };
+
   /* Provides an easy to use layout block for displaying information
    * in label/info pairs
    * Insert into a QGridLayout using that layout's addLayout() method
@@ -73,6 +94,7 @@ namespace cent {
    */
   class InputBox : public QGridLayout
   {
+
   public:
     struct InputPair {   // Contains pointers to the label and text input box(es?) of one line
       QLabel* label;
@@ -80,15 +102,21 @@ namespace cent {
       InputPair(QLabel* label, QLineEdit* box) : label(label), box(box){}
     };
 
-    //InputBox(parameters);
+    InputBox(cent::ParameterMap parameters);
 
-    QLineEdit* addInputLine(const QString& label, const QString& name="", const int minWidth=30);
-    QLineEdit* addInputLine(const QList<QString>& labels, const QList<QString>& names=QList<QString>(), const int minWidth=30);
+    QLineEdit* addInputLine(const QString& label, const QString& name="",
+                            const QString& default_value="", const bool readonly=false,
+                            const int minWidth=30);
+    QLineEdit* addInputLine(const QList<QString>& labels,
+                            const QList<QString>& names=QList<QString>(), const int minWidth=30);
     QString getValueString(const QString& name) const;
     double getValue(const QString& name) const;
     void setValue(const QString& name, const QString& value);
     void setValue(const QString& name, const int value);
     void setValue(const QString& name, const double value);
+    void repaint();
+    cent::ParameterMap get_parameters() const;
+
     QPushButton* addButton(const QString& label, const QString& name="");
 
     QHash<QString, InputPair > elements;
