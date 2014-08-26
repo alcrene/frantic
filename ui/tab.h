@@ -91,6 +91,7 @@ namespace cent {
 
   /* Provides an easy to use layout block for parameter tuning widgets
    * (label/textbox pairs, sliders (todo), buttons)
+   * \todo: use QList so that order of displayed elements can be controlled
    */
   class InputBox : public QGridLayout
   {

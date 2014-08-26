@@ -52,31 +52,18 @@ template <class XVector> void Series<XVector>::line_of_data(double t, XVector x)
  * If the filename exists or cannot be opened, it is appended with a number and retried;
  * this proceded is repeated until file is successfully opened or 'max_files' is reached.
  * \todo: Add number before file extension
- * \todo: Add trailing '\' to pathname if necessary
+ * \todo: Add trailing '/' to pathname if necessary
  */
 template <class XVector>
-void Series<XVector>::dumpToText(const std::string filename, const std::string pathname,
+void Series<XVector>::dumpToText(const std::string pathname, const std::string filename,
                                  const bool include_labels, const std::string format, const int max_files) {
-  std::string outfilename = pathname + filename;
 
-  std::fstream outfile(outfilename, std::ios::in);
+  std::string outfilename = cent::get_free_filename(pathname, filename, max_files);  // Returns "" if unsuccessful
 
-  if (outfile.is_open()) {
-      // File exists; try appending numbers to find non-existing one
-      for(int i=1; i<= max_files; ++i) {
-          outfile.close();
-          outfilename = pathname + filename + "_" + std::to_string(i);
-          outfile.open(outfilename, std::ios::in);
-          if (!outfile.is_open()) {
-              break;
-          }
-      }
-  }
-
-  if (!outfile.is_open()) {
+  if (outfilename != "") {
     // Succesfully found a free filename
-    outfile.close();
-    outfile.open(outfilename.c_str(), std::ios::out);
+//    outfile.close();
+    std::fstream outfile(outfilename.c_str(), std::ios::out);
 
     std::array<std::string, 3> formatStrings = getFormatStrings(format);
     std::string headChar = formatStrings[0];  // 1 or more characters that appears at the beginning of each line

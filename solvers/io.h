@@ -14,13 +14,14 @@
 
 namespace cent
 {
-  std::string getFreeFilenameToWrite(std::string filename, std::string directory="",
-                                     const int max_files=100);
+  std::string get_free_filename(std::string filename, std::string directory="",
+                                const int max_files=100);
+
+
   /* structure for storing variables and names
    * provides a common interfaces for a programme's variables, for example for
    * a GUI wanting to modifify parameters or a function for writing/reading parameters
    */
-
   struct Parameter
   {
   public:

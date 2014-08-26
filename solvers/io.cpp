@@ -9,8 +9,8 @@
  */
 namespace cent
 {
-  std::string getFreeFilenameToWrite(std::string filename, std::string directory,
-                                      const int max_files)
+  std::string get_free_filename(std::string directory, std::string filename,
+                                const int max_files)
   {
     directory = directory + "/";
     std::string outfilename = directory + filename;

@@ -123,28 +123,15 @@ void HistCollection<XVector>::set_bin_edges(o2scl::hist& hist, double t, size_t 
    * \todo: allow to specify what labels to include by flags; e.g. per row or per block bin edges
    */
 template <typename XVector>
-void HistCollection<XVector>::dumpToText(const std::string filename, const std::string pathname,
+void HistCollection<XVector>::dumpToText(const std::string pathname, const std::string filename,
                                          const bool include_labels, const std::string format, const int max_files) {
-  std::string outfilename = pathname + filename;
 
-  std::fstream outfile(outfilename, std::ios::in);
+  std::string outfilename = cent::get_free_filename(pathname, filename, max_files);  // Returns "" if unsuccessful
 
-  if (outfile.is_open()) {
-    // File exists; try appending numbers to find non-existing one
-    for(int i=1; i<= max_files; ++i) {
-      outfile.close();
-      outfilename = pathname + filename + "_" + std::to_string(i);
-      outfile.open(outfilename, std::ios::in);
-      if (!outfile.is_open()) {
-        break;
-      }
-    }
-  }
-
-  if (!outfile.is_open()) {
+  if (outfilename != "") {
     // Succesfully found a free filename
-    outfile.close();
-    outfile.open(outfilename.c_str(), std::ios::out);
+//    outfile.close();
+    std::fstream outfile(outfilename.c_str(), std::ios::out);
 
     std::array<std::string, 3> formatStrings = getFormatStrings(format);
     std::string headChar = formatStrings[0];  // 1 or more characters that appears at the beginning of each line
