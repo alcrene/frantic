@@ -55,12 +55,15 @@ namespace cent
     public:
       std::string operator()(const double val) const
       {
-        return std::to_string(val);
+        // Function copied from http://stackoverflow.com/a/13709929
+        std::string str = std::to_string(val);
+        return str.erase( str.find_last_not_of('0') + 1, std::string::npos );  // Remove trailing zeros
       }
       std::string operator() (const std::string val) const {
         return val;
       }
     };
+
     std::string get_value()
     {
       return boost::apply_visitor(value_to_string(), value);
