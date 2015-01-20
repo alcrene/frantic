@@ -13,11 +13,18 @@ template <typename XVector> void HistCollection<XVector>::reserve(size_t n) {
   xValues.reserve(n);
 }
 
+template <typename XVector> void HistCollection<XVector>::clear()
+{
+  tValues.clear();
+  xValues.clear();
+}
+
 /* Set requirements to determine binning of the histograms
    * bin_limit_function should take two arguments, the time and component,
    * and return an array of two values: the lower limit of the first bin, and upper limit of the last bin
    * nbins is the number of bins desired between this interval
    * At the moment all histograms, at all times and for each component, use the same number of bins
+   * \todo: What happens to old data when the bins change ? Force clear it ?
    */
 template <typename XVector>
 void HistCollection<XVector>::set_binning(std::function<std::array<double, 2>(double, size_t)> bin_limit_function, int nbins, BinningMode mode)
@@ -126,7 +133,7 @@ template <typename XVector>
 void HistCollection<XVector>::dumpToText(const std::string pathname, const std::string filename,
                                          const bool include_labels, const std::string format, const int max_files) {
 
-  std::string outfilename = cent::get_free_filename(pathname, filename, max_files);  // Returns "" if unsuccessful
+  std::string outfilename = frantic::get_free_filename(pathname, filename, max_files);  // Returns "" if unsuccessful
 
   if (outfilename != "") {
     // Succesfully found a free filename

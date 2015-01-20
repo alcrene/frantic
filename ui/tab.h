@@ -17,9 +17,9 @@
 #include "curve.h"
 #include "histogram.h"
 #include "plot.h"
-#include "../solvers/io.h"
+#include "../integrators/io.h"
 
-namespace cent {
+namespace frantic {
 
   /* Manage a tab with plot widgets and input fields
    */
@@ -54,7 +54,7 @@ namespace cent {
 //  class ParameterBox : public QGridLayout
 //  {
 //  private:
-//    cent::ParameterMap parameter_map;
+//    frantic::ParameterMap parameter_map;
 
 //  public:
 //    struct InputPair {   // Contains pointers to the label and text input box(es?) of one line
@@ -64,9 +64,9 @@ namespace cent {
 //    };
 
 //    ParameterBox () {}
-//    ParameterBox (cent::ParameterMap);
-//    cent::ParameterMap get_parameters() {}
-//    cent::Parameter get_parameter(std::string key);
+//    ParameterBox (frantic::ParameterMap);
+//    frantic::ParameterMap get_parameters() {}
+//    frantic::Parameter get_parameter(std::string key);
 
 //    QHash<QString, InputPair > elements;
 //  };
@@ -103,7 +103,7 @@ namespace cent {
       InputPair(QLabel* label, QLineEdit* box) : label(label), box(box){}
     };
 
-    InputBox(cent::ParameterMap parameters);
+    InputBox(frantic::ParameterMap parameters);
 
     QLineEdit* addInputLine(const QString& label, const QString& name="",
                             const QString& default_value="", const bool readonly=false,
@@ -116,7 +116,7 @@ namespace cent {
     void setValue(const QString& name, const int value);
     void setValue(const QString& name, const double value);
     void repaint();
-    cent::ParameterMap get_parameters() const;
+    frantic::ParameterMap get_parameters() const;
 
     QPushButton* addButton(const QString& label, const QString& name="");
 

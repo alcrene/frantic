@@ -1,10 +1,10 @@
 #-------------------------------------------------
 #
-# qtCENT project file created 2014-03-25
+# qtFRANTIC project file created 2014-03-25
 #
 #-------------------------------------------------
 
-TARGET = qtCENT
+TARGET = qtFRANTIC
 TEMPLATE = lib
 CONFIG += staticlib
 
@@ -23,7 +23,7 @@ HEADERS += tab.h \
     curve.h \
     plot.h \
     histogram.h \
-   qtcent.h
+    qtfrantic.h
 
 
 #unix:!symbian {
@@ -40,8 +40,8 @@ HEADERS += tab.h \
 #INCLUDEPATH += /home/alex/local/include
 #DEPENDPATH += /home/alex/local/include
 
-#INCLUDEPATH += /home/alex/code/c++/cent
-#DEPENDPATH += /home/alex/code/c++/cent/builds/debug
+#INCLUDEPATH += /home/alex/code/c++/frantic
+#DEPENDPATH += /home/alex/code/c++/frantic/builds/debug
 
 #unix:!macx: LIBS += -L/home/alex/local/lib64
 

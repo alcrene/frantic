@@ -47,22 +47,22 @@
 #ifndef RKF45_GSL_H
 #define RKF45_GSL_H
 
-#include "solver.h"
+#include "integrator.h"
 
 //#include <o2scl/test_mgr.h>
 //#include <o2scl/ode_funct.h>
 //#include <o2scl/ode_rkf45_gsl.h>
 //#include <o2scl/table.h>
-//#include <o2scl/ode_iv_solve.h>
+//#include <o2scl/ode_iv_integrate.h>
 //#include <o2scl/hdf_file.h>
 //#include <o2scl/hdf_io.h>
 
 using std::vector;
 
-namespace solvers {
+namespace integrators {
 
   template <class Differential>
-  class RKF45_gsl : public Solver<Differential>
+  class RKF45_gsl : public Integrator<Differential>
   {
   private:
     //	  ODETypes::NOISE_SHAPE noiseShape = ODETypes::NOISE_NONE;
@@ -70,13 +70,13 @@ namespace solvers {
     using XVector = typename Differential::XVector;
 
     // required because this is a template function
-    using Solver<Differential>::odeSeries;
-    using Solver<Differential>::odeSeriesError;
-    using Solver<Differential>::tBegin;
-    using Solver<Differential>::tEnd;
-    using Solver<Differential>::dt;  // stepsize
-    using Solver<Differential>::nSteps;
-    using Solver<Differential>::ode;
+    using Integrator<Differential>::odeSeries;
+    using Integrator<Differential>::odeSeriesError;
+    using Integrator<Differential>::tBegin;
+    using Integrator<Differential>::tEnd;
+    using Integrator<Differential>::dt;  // stepsize
+    using Integrator<Differential>::nSteps;
+    using Integrator<Differential>::ode;
 
     Differential dX;
 
@@ -86,7 +86,7 @@ namespace solvers {
     // Constructor below
     virtual ~RKF45_gsl() {}
 
-    void solve(typename Differential::ParamType parameters) {
+    void integrate(typename Differential::ParamType parameters) {
       double t;
       XVector x, dx, xout, dx_out;
       XVector xerr;
@@ -104,7 +104,7 @@ namespace solvers {
       odeSeries.line_of_data(t,x);
       odeSeriesError.line_of_data(t, XVector::Constant(0));
 
-      while (Solver<Differential>::odeDone(t)) {
+      while (Integrator<Differential>::odeDone(t)) {
         step(t, x, dx, x, xerr, dx);
         t += dt;
         odeSeries.line_of_data(t, x);

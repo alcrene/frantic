@@ -13,7 +13,7 @@
 
 #include "o2scl/table.h"
 
-namespace solvers {
+namespace integrators {
 
   /* Specialized class for tables containing series data
    * (i.e. nD dependent vector (x) vs 1D independent variable (t))

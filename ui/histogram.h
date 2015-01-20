@@ -17,7 +17,7 @@
  *      - Set borderflags in intervalSample ?
  */
 
-namespace cent {
+namespace frantic {
 
   class Histogram : public QwtPlotHistogram
   {

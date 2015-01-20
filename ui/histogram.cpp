@@ -1,6 +1,6 @@
 #include "histogram.h"
 
-namespace cent {
+namespace frantic {
 
   /* Bin vector data into nbins number of bins and add to the histogram using its setSamples method.
    * The optional discardThreshold is a percentage indicating the minimum frequency we want in a bin.

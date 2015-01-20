@@ -1,6 +1,6 @@
 #include "tab.h"
 
-namespace cent {
+namespace frantic {
 
   tab::tab(QWidget *parent) :
     QWidget(parent)
@@ -84,13 +84,13 @@ namespace cent {
 
   }
 
-  InputBox::InputBox(cent::ParameterMap parameters)
+  InputBox::InputBox(frantic::ParameterMap parameters)
   {
     for (auto itr = parameters.begin(); itr != parameters.end(); ++itr) {
       addInputLine(QString::fromUtf8(itr->second.display_str.c_str()),
                    QString::fromUtf8(itr->first.c_str()),
                    QString(itr->second.get_value().c_str()),
-                   //QString(boost::apply_visitor(cent::Parameter::value_to_string(), itr->second.value).c_str()),
+                   //QString(boost::apply_visitor(frantic::Parameter::value_to_string(), itr->second.value).c_str()),
                    !(itr->second.modifiable)
                    );
     }
@@ -215,9 +215,9 @@ namespace cent {
    * \todo: return proper parameter type
    *        -> could do this with template function to which we give Parameter::TVal
    */
-  cent::ParameterMap InputBox::get_parameters() const
+  frantic::ParameterMap InputBox::get_parameters() const
   {
-    cent::ParameterMap parameters;
+    frantic::ParameterMap parameters;
 
     QHashIterator<QString, InputBox::InputPair> itr(elements);
     while(itr.hasNext()) {

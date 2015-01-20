@@ -1,6 +1,6 @@
 #include "plot.h"
 
-namespace cent {
+namespace frantic {
 
   Plot::Plot(QWidget *parent) :
       QwtPlot(parent)

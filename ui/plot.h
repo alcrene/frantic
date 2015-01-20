@@ -10,7 +10,7 @@
 #include "curve.h"
 #include "histogram.h"
 
-namespace cent {
+namespace frantic {
 
   class Plot : public QwtPlot
   {

@@ -58,7 +58,7 @@ template <class XVector>
 void Series<XVector>::dumpToText(const std::string pathname, const std::string filename,
                                  const bool include_labels, const std::string format, const int max_files) {
 
-  std::string outfilename = cent::get_free_filename(pathname, filename, max_files);  // Returns "" if unsuccessful
+  std::string outfilename = frantic::get_free_filename(pathname, filename, max_files);  // Returns "" if unsuccessful
 
   if (outfilename != "") {
     // Succesfully found a free filename

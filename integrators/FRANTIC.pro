@@ -1,10 +1,10 @@
 #-------------------------------------------------
 #
-# CENT-core project file created 2014-03-25
+# FRANTIC-core project file created 2014-03-25
 #
 #-------------------------------------------------
 
-TARGET = CENT
+TARGET = FRANTIC
 TEMPLATE = lib
 CONFIG += staticlib
 
@@ -12,18 +12,20 @@ QMAKE_CXXFLAGS += -std=c++11
 
 DEFINES += O2SCL_CPP11
 
-SOURCES += solver.tpp \
+SOURCES += \
     series.tpp \
     histcollection.tpp \
-    io.cpp
+    io.cpp \
+    integrator.tpp
 
-HEADERS += solver.h \
+HEADERS += \
     series.h \
     euler.h \
     euler_sttic.h \
     rkf45_gsl.h \
     histcollection.h \
-    io.h
+    io.h \
+    integrator.h
 
 #unix:!symbian {
 #    maemo5 {

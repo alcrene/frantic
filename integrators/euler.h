@@ -1,37 +1,37 @@
-/* Basic ODE solver using an Euler-scheme
+/* Basic ODE integrator using an Euler-scheme
  */
 
 #ifndef EULER_H
 #define EULER_H
 
-#include "solver.h"
+#include "integrator.h"
 
 using std::vector;
 
-namespace solvers {
+namespace integrators {
 
 template <class Differential>
-class Euler : public Solver<Differential>
+class Euler : public Integrator<Differential>
 {
 private:
   using XVector = typename Differential::XVector;
 
     // required because this a template function
-    using Solver<Differential>::odeSeries;
-    using Solver<Differential>::tBegin;
-    using Solver<Differential>::dt;
-    using Solver<Differential>::nSteps;
-    using Solver<Differential>::ode;
+    using Integrator<Differential>::odeSeries;
+    using Integrator<Differential>::tBegin;
+    using Integrator<Differential>::dt;
+    using Integrator<Differential>::nSteps;
+    using Integrator<Differential>::ode;
 
  public:
 
-    Euler<Differential>():Solver<Differential>() {
+    Euler<Differential>():Integrator<Differential>() {
         this->noiseShape = ODETypes::NOISE_NONE;
         this->order = 1;
     }
     virtual ~Euler() {}
 
-    void solve(typename Differential::Param parameters) {
+    void integrate(typename Differential::Param parameters) {
         // Maybe this should be adapted to interpolate between two time steps, to allow
         // propagation backward in time
 

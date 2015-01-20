@@ -15,7 +15,7 @@
  *   - Constructor to set default value for plotdata?, plotformat
  */
 
-namespace cent {
+namespace frantic {
 
   class Curve : public QwtPlotCurve
   /* Class for preparing and aggregating a single set of information to be presented,

@@ -7,7 +7,7 @@
  * \todo: Add trailing '/' to pathname if necessary
  * \todo: Should .c_str() be used ?
  */
-namespace cent
+namespace frantic
 {
   std::string get_free_filename(std::string directory, std::string filename,
                                 const int max_files)

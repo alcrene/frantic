@@ -1,6 +1,6 @@
 #include "curve.h"
 
-namespace cent {
+namespace frantic {
 
   Curve::Curve(const std::vector<double>& xdata, const std::vector<double>& ydata)
   //    : plotdata(xdata, ydata)

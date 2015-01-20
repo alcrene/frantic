@@ -12,7 +12,7 @@
  * \todo: Add possibility to merge two parameter maps (overloaded + ?)
  */
 
-namespace cent
+namespace frantic
 {
   std::string get_free_filename(std::string filename, std::string directory="",
                                 const int max_files=100);

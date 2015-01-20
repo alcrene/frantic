@@ -1,39 +1,39 @@
 #ifndef EULER_STTIC_H
 #define EULER_STTIC_H
 
-#include "solver.h"
+#include "integrator.h"
 
 using std::vector;
 
-namespace solvers {
+namespace integrators {
 
   template <class Differential>
-  class Euler_sttic : public Solver<Differential>
+  class Euler_sttic : public Integrator<Differential>
   {
   private:
     using XVector = typename Differential::XVector;
 
   public:
 
-    using Solver<Differential>::Solver;  // Allow parent class overloads
-    Euler_sttic<Differential>() : Solver<Differential>() {
+    using Integrator<Differential>::Integrator;  // Allow parent class overloads
+    Euler_sttic<Differential>() : Integrator<Differential>() {
       this->noiseShape = ODETypes::NOISE_VECTOR;
       this->order = 0.5;
     }
     virtual ~Euler_sttic() {}
 
-    /* Overloaded solve function which initializes creates a local dX total derivative from the specified parameters
+    /* Overloaded integrate function which initializes creates a local dX total derivative from the specified parameters
        **** BUGY **** : x0 is not set this way, which will almost always be a problem
      */
-    void solve(const cent::ParameterMap& parameters) {
-      std::cerr << "This call to 'solve' is buggy. Please use another or, if you need this one, fix it." << std::endl;
-      solve(Differential(this->odeSeries, parameters));
+    void integrate(const frantic::ParameterMap& parameters) {
+      std::cerr << "This call to 'integrate' is buggy. Please use another or, if you need this one, fix it." << std::endl;
+      integrate(Differential(this->odeSeries, parameters));
     }
 
-    /* Given a total derivative functor dX, solve the DE problem.
+    /* Given a total derivative functor dX, integrate the DE problem.
      * To have the function create a functor from parameters, use the alternate constructor
      */
-    void solve(const Differential& dX) {
+    void integrate(const Differential& dX) {
       // Maybe this should be adapted to interpolate between two series_t elements, to allow
       // propagation backward in time (or even maybe uneven timesteps ?)
 

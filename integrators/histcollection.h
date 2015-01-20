@@ -10,7 +10,7 @@
 
 #include "o2scl/hist.h"
 
-namespace cent {
+namespace frantic {
   /* Container for a series of snapshot histograms
    * Histograms refer to a state when the indexing variable (typically time) is a certain value
    * There is one histogram per component in XVector per time point
@@ -43,6 +43,7 @@ namespace cent {
     void update(double t, XVector& x, double val=1.0);
     void set_binning(std::function<std::array<double, 2>(double, size_t)> bin_limit_function, int nbins, BinningMode mode=UNIFORM);
     void reserve(size_t n);
+    void clear();
 
   private:
     std::vector<double> tValues;
@@ -60,6 +61,6 @@ namespace cent {
 
 #include "histcollection.tpp"
 
-} // End namespace cent
+} // End namespace frantic
 
 #endif // HISTCOLLECTION_H

@@ -1,5 +1,5 @@
-#ifndef QTCENT_H
-#define QTCENT_H
+#ifndef QTFRANTIC_H
+#define QTFRANTIC_H
 
 #include <QColor>
 #include <QTime>
@@ -7,9 +7,9 @@
 
 #include <random>
 
-/* Short functions and classes of general use for QtCENT */
+/* Short functions and classes of general use for QtFRANTIC */
 
-namespace QtCENT {
+namespace frantic {
 
   // inlines required because in header file; maybe could just move everything to .cpp instead ?
 
@@ -30,4 +30,4 @@ namespace QtCENT {
   }
 }
 
-#endif // QTCENT_H
+#endif // QTFRANTIC_H

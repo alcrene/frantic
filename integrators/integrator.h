@@ -1,14 +1,14 @@
-/* Generic solver class.
+/* Generic integrator class.
  *
- * All solvers should inherit from this one; it provides a generic interface,
+ * All integrators should inherit from this one; it provides a generic interface,
  * as well as general functions that may be overloaded if needed.
  * 
  * Implements the few elements of o2scl/ode/ode_step.h to allow near copy-paste
  * implementations of algorithms from o2scl.
  */
 
-#ifndef SOLVER_H
-#define SOLVER_H
+#ifndef INTEGRATOR_H
+#define INTEGRATOR_H
 
 //#include "DEET_global.h"
 
@@ -27,11 +27,11 @@
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/StdVector>
 
-#include "solvers/series.h"
+#include "series.h"
 #include "io.h"
 
 /* \todo: Mark appropriate functions as const (get__, for example)
- * \todo: Use child class for InterpolatedSolver, similar as InterpolatedSeries ?
+ * \todo: Use child class for InterpolatedIntegrator, similar as InterpolatedSeries ?
  */
 
 
@@ -48,7 +48,7 @@ enum NOISE_SHAPE {
 };
 }
 
-namespace solvers {
+namespace integrators {
 
   //typedef std::map<std::string, double> Param;  // \todo: Delete. Parameter struct is now defined in problem's Differential class
 
@@ -59,7 +59,7 @@ namespace solvers {
    *        Careful not to break references (e.g. txSeries in dX).
    */
   template <class Differential>
-  class Solver
+  class Integrator
   {
   protected:
     using XVector = typename Differential::XVector;
@@ -74,21 +74,21 @@ namespace solvers {
     Series<XVector> odeSeriesError;
     Series<XVector>& odeSeriesErrorRef = odeSeriesError;
 
-    Solver() : Solver("x") {}
-    Solver(std::string varname) : Solver(varname, varname + "err") {}
-    Solver(std::string varname, std::string varerrname)
+    Integrator() : Integrator("x") {}
+    Integrator(std::string varname) : Integrator(varname, varname + "err") {}
+    Integrator(std::string varname, std::string varerrname)
       : odeSeries(varname), odeSeriesError(varerrname) {
       order = 0;     //Provided for O2scl compatibility
     }
     // \todo This will require move semantics of XSeries
-    // Solver(ODEdef& ode, XSeries odeSeries): odeSeries(odeSeries),
-    Solver(const Solver& source) = delete;
+    // Integrator(ODEdef& ode, XSeries odeSeries): odeSeries(odeSeries),
+    Integrator(const Integrator& source) = delete;
     // We disable the copy constructor because it can lead to problems, notably:
     //      - Copying of large result data sets
     //      - Non-synchronious copies, if it was made by accident and one expects a reference
     //      - e.g. dX objects expect a reference to odeSeries, which would be broken on the copy
 
-    virtual ~Solver() {}
+    virtual ~Integrator() {}
 
 	/* Provided for O2scl compatibility
 	   Since O2scl expects int, we round up in case we have fractional order (which happens in stochastics) */
@@ -111,8 +111,8 @@ namespace solvers {
     // Debugging helpers
     void dump(std::string cmpntName);
 
-    // \todo: When Differential class is moved to CENT, use Differential call signature
-    void solve(cent::ParameterMap& parameters);                /* This function should always be overloaded by the actual solver */
+    // \todo: When Differential class is moved to FRANTIC, use Differential call signature
+    void integrate(frantic::ParameterMap& parameters);                /* This function should always be overloaded by the actual integrator */
 
 
 
@@ -155,7 +155,7 @@ namespace solvers {
   };
 
 
-#include "solver.tpp"
+#include "integrator.tpp"
 }
 
-#endif // SOLVER_H
+#endif // INTEGRATOR_H
