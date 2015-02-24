@@ -39,15 +39,6 @@
 using std::vector;
 using namespace::Eigen;
 
-namespace ODETypes {
-// The shape of g(x,t) in the ODE definition
-enum NOISE_SHAPE {
-    NOISE_NONE,       // No noise
-    NOISE_VECTOR,     // Only one random variable. i.e. noise weighting is deterministic, only magitude is random
-    NOISE_MATRIX      // Multiple random variables.
-};
-}
-
 namespace integrators {
 
   //typedef std::map<std::string, double> Param;  // \todo: Delete. Parameter struct is now defined in problem's Differential class
@@ -131,7 +122,6 @@ namespace integrators {
     //double initX;                  // If I decide to use this, use 'x0' instead
     // int XDim;                     // Probably should be removed
     bool initConditionsSet = false;
-    ODETypes::NOISE_SHAPE noiseShape;
 
 //    void discretize();
 //    Functor dX;

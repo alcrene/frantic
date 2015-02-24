@@ -5,6 +5,7 @@
 #include <fstream>
 #include <map>
 #include <boost/variant.hpp>
+#include <boost/bind.hpp>
 #include <Eigen/Dense>
 
 
@@ -19,7 +20,7 @@ namespace frantic
 
 
   /* structure for storing variables and names
-   * provides a common interfaces for a programme's variables, for example for
+   * provides a common interfaces for a program's variables, for example for
    * a GUI wanting to modifify parameters or a function for writing/reading parameters
    */
   struct Parameter
@@ -29,27 +30,57 @@ namespace frantic
     enum TVal_types {TVAL_DOUBLE, TVAL_STRING};   // not used at the moment
 
     std::string display_str = "default";
-    boost::variant<double, std::string> value = 0;
+    TVal value = 0;
     bool modifiable = true;     // Typical usage: indicate whether to display as modifiable or fixed parameter
-                                // Should not be possible to modify this after parameter creation
+                                // \todo: Should not be possible to modify this after parameter creation
+    void* var = nullptr;        // Optional reference to an external variable to be kept in sync with 'value'
+                                // Somehow if this is not initialized last, the following variable(s?) is corrupted
 
     Parameter() {}  // It seems implementation of std::map requires an empty constructor
     Parameter(const std::string display_str, const TVal value, const bool modifiable=true)
       : display_str(display_str), value(value), modifiable(modifiable) {}
+
+    Parameter(double* var, const std::string display_str, const TVal value, const bool modifiable=true)
+      : display_str(display_str), value(value), modifiable(modifiable), var(var)
+    {
+      *(static_cast<double*>(var)) = boost::get<double>(value);
+    }
+    Parameter(std::string* var, const std::string display_str, const TVal value, const bool modifiable=true)
+      : display_str(display_str), value(value), modifiable(modifiable), var(var)
+    {
+      *(static_cast<std::string*>(var)) = boost::get<std::string>(value);
+    }
     Parameter(const Parameter& source)
-      : display_str(source.display_str), value(source.value), modifiable(source.modifiable) {}  // const required in order not to break implicit constructor declaration in std::map
+      : display_str(source.display_str), value(source.value), modifiable(source.modifiable), var(source.var) {}  // const required in order not to break implicit constructor declaration in std::map
+
 
     // Practical to be allowed to assigned directly to value
-    Parameter& operator= (const TVal new_value){
+    Parameter& operator= (const double new_value) {
       value = new_value;
+      if (var != nullptr) {
+        *(static_cast<double*>(var)) = new_value;
+      }
+      return *this;
+    }
+    Parameter& operator= (const std::string new_value) {
+      value = new_value;
+      if (var != nullptr) {
+        *(static_cast<std::string*>(var)) = new_value;
+      }
       return *this;
     }
     Parameter& operator= (const Parameter& source) {
+      var = source.var;
       display_str = source.display_str;
-      value = source.value;
+      if ( const double* dvalue = boost::get<double>(&source.value) ) {
+        value = *dvalue;
+      } else if ( const std::string* svalue = boost::get<std::string>(&source.value) ) {
+        value = *svalue;
+      }
       modifiable = source.modifiable;
       return *this;
     }
+
 
     class value_to_string : public boost::static_visitor<std::string>
     {
@@ -69,21 +100,6 @@ namespace frantic
     {
       return boost::apply_visitor(value_to_string(), value);
     }
-
-    
-    // Functions to convert the value to a form for printing, displaying in text boxes, etc.
-//    std::string export_value()
-//    {
-//      return export_value(value);
-//    }
-//    std::string export_value(std::string val)
-//    {
-//      return val;
-//    }
-//    std::string export_value(double val)
-//    {
-//      return export_value(std::string(val));
-//    }
 
     
   };
@@ -107,9 +123,16 @@ namespace frantic
     }
 
     Parameter& operator[] (const std::string& key) {return parameter_map[key];}
+
     // \todo: Add check for name clashes
     void add_parameter(std::string key, std::string display_str, Parameter::TVal value) {
       parameter_map[key] = Parameter(display_str, value);
+    }
+    void add_parameter(double* var, std::string key, std::string display_str, Parameter::TVal value) {
+      parameter_map[key] = Parameter(var, display_str, value);
+    }
+    void add_parameter(std::string* var, std::string key, std::string display_str, Parameter::TVal value) {
+      parameter_map[key] = Parameter(var, display_str, value);
     }
     void add_parameter(const std::string& key, const Parameter& parameter) {
       parameter_map[key] = parameter;

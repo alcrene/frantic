@@ -25,23 +25,8 @@ HEADERS += \
     rkf45_gsl.h \
     histcollection.h \
     io.h \
-    integrator.h
-
-#unix:!symbian {
-#    maemo5 {
-#        target.path = /opt/usr/lib
-#    } else {
-#        target.path = /usr/lib
-#    }
-#    INSTALLS += target
-#}
-
-# CLHEP library components
-
-#INCLUDEPATH += /home/alex/local/include
-#DEPENDPATH += /home/alex/local/include
-
-#unix:!macx: LIBS += -L/home/alex/local/lib64
+    integrator.h \
+    stochastic.h
 
 # O2scl library
 

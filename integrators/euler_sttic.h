@@ -17,7 +17,6 @@ namespace integrators {
 
     using Integrator<Differential>::Integrator;  // Allow parent class overloads
     Euler_sttic<Differential>() : Integrator<Differential>() {
-      this->noiseShape = ODETypes::NOISE_VECTOR;
       this->order = 0.5;
     }
     virtual ~Euler_sttic() {}
@@ -48,7 +47,9 @@ namespace integrators {
       for(i=0; i < this->nSteps - 1; ++i) {
         //      XVector test = dX.g(series_x[i], i*tStepSize);
         // \todo: Check if we should specify Eigen matrix multiplication
-        x += dX.f(t, x) * this->dt + dX.g(t, x) * dX.dS(this->dt);
+        // \todo: Why is t incremented before saving data ?
+        x += dX.drift(t, x) * this->dt
+            + dX.diffusion_coeffs(t).sum_products(dX.diffusion_differentials(t,this->dt));
         t += this->dt;
         this->odeSeries.line_of_data(t, x);
       }

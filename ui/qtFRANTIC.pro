@@ -25,26 +25,6 @@ HEADERS += tab.h \
     histogram.h \
     qtfrantic.h
 
-
-#unix:!symbian {
-#    maemo5 {
-#        target.path = /opt/usr/lib
-#    } else {
-#        target.path = /usr/lib
-#    }
-#    INSTALLS += target
-#}
-
-# CLHEP library components
-
-#INCLUDEPATH += /home/alex/local/include
-#DEPENDPATH += /home/alex/local/include
-
-#INCLUDEPATH += /home/alex/code/c++/frantic
-#DEPENDPATH += /home/alex/code/c++/frantic/builds/debug
-
-#unix:!macx: LIBS += -L/home/alex/local/lib64
-
 # O2scl library
 
 LIBS += -lo2scl
