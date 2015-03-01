@@ -188,9 +188,7 @@ namespace frantic {
      *   Use of shared_ptr ensures that in both cases memory is properly deallocated.
      */
     void set_initial_state( std::shared_ptr<InitialState> state) {
-      (*state)(0);
       initial_state = std::move(state);
-      (*initial_state)(0);
       set(0, t0, (*initial_state)(t0)); // The integrator expects the first row to be set
     }
     void line_of_data(double t, XVector& x);  // overloaded data adding function to allow using the XVector type
