@@ -1,5 +1,6 @@
 /* Runge-Kutta-Fehlberg embedded Runge-Kutta ODE for error control
- * Adapted version from the version in O2scl; that code's copyright info follows
+ * Adapted version from the version in O2scl itself derived from the
+ * GSL implemenation; those codes' copyright info follows
  */
 /*
   -------------------------------------------------------------------
@@ -61,8 +62,14 @@ using std::vector;
 
 namespace integrators {
 
+
+  /* A Runge-Kutta 4-5 embedded integrator (4th order integration, 5-th order error)
+   * The required signature for the update function is
+   * void update(double t, double x, double xerr)
+   * where t is current time, x current state, and xerr the estimated step error
+   */
   template <class Differential>
-  class RKF45_gsl : public Integrator<Differential>
+  class RKF45_gsl : public frantic::Integrator<Differential>
   {
   private:
     //	  ODETypes::NOISE_SHAPE noiseShape = ODETypes::NOISE_NONE;
@@ -70,15 +77,14 @@ namespace integrators {
     using XVector = typename Differential::XVector;
 
     // required because this is a template function
-    using Integrator<Differential>::odeSeries;
-    using Integrator<Differential>::odeSeriesError;
-    using Integrator<Differential>::tBegin;
-    using Integrator<Differential>::tEnd;
-    using Integrator<Differential>::dt;  // stepsize
-    using Integrator<Differential>::nSteps;
-    using Integrator<Differential>::ode;
+    using frantic::Integrator<Differential>::history;
+    using frantic::Integrator<Differential>::tBegin;
+    using frantic::Integrator<Differential>::tEnd;
+    using frantic::Integrator<Differential>::dt;  // stepsize
+    using frantic::Integrator<Differential>::nSteps;
+    using frantic::Integrator<Differential>::ode;
 
-    Differential dX;
+    Differential& dX;
 
   public:
     //	  int order = 5;
@@ -94,32 +100,21 @@ namespace integrators {
       //o2scl::test_mgr test_mgr;
       //test_mgr.set_output_level(1);
 
-      assert(checkInitialized());
+      assert(history.check_initialized());
 
       dX.setParameters(parameters);
 
-      t = tBegin;
-      x = ode.x0;
+      t = history.t0;
+      x = history(t);
       dx = dX.f(t, x);
-      odeSeries.line_of_data(t,x);
-      odeSeriesError.line_of_data(t, XVector::Constant(0));
+      //history.update(t,x, XVector::Constant(0));
 
-      while (Integrator<Differential>::odeDone(t)) {
+      while (history.after_end(t)) {
         step(t, x, dx, x, xerr, dx);
         t += dt;
-        odeSeries.line_of_data(t, x);
-        odeSeriesError.line_of_data(t, xerr);
+        history.update(t, x, xerr);
       }
 
-    }
-
-    /* Basic sanity check for initial conditions
-           * Returns false if one of the initialization values is clearly improperly set
-           */
-    bool checkInitialized() {
-      bool initialized = true;
-      if (this->tEnd == this->tBegin or this->dt == 0 or this->nSteps == 0) {initialized = false;}
-      return initialized;
     }
 
     //----------------------------------------------------
@@ -148,9 +143,8 @@ namespace integrators {
 
   public:
 
-    RKF45_gsl<Differential>() : dX(odeSeries) {
-      this->noiseShape = ODETypes::NOISE_NONE;
-      this->order=5;
+    RKF45_gsl<Differential>(Differential& dX) : dX(dX) {
+      this->order=4;
 
       ah << 1.0/4.0, 3.0/8.0, 12.0/13.0, 1.0, 1.0/2.0;
       b3 << 3.0/32.0, 9.0/32.0;
@@ -201,29 +195,29 @@ namespace integrators {
       //if (printout) std::cout << "k1: " << xtmp[0] << ", " << xtmp[1] << std::endl;
 
       // k2 step
-      k2 = dX.f(t + ah[0]*dt, xtmp);
+      k2 = dX.f(t + ah[0]*dt, xtmp, history);
       xtmp = x + dt * (b3(0) * dxdt + b3(1) * k2);
       //if (printout) std::cout << "k2: " << xtmp[0] << ", " << xtmp[1] << std::endl;lastmod{1388808352000}; mode{1}; location{[BaseFolder]/Shampine_2005_Error Estimation and Control for ODEs.pdf}; projectFolder{}
 
       // k3 step
-      k3 = dX.f(t + ah[1]*dt, xtmp);
+      k3 = dX.f(t + ah[1]*dt, xtmp, history);
       xtmp = x + dt * (b4(0) * dxdt + b4(1) * k2 + b4(2) * k3);
       //if (printout) std::cout << "k3: " << xtmp[0] << ", " << xtmp[1] << std::endl;
 
       // k4 step
-      k4 = dX.f(t + ah[2]*dt, xtmp);
+      k4 = dX.f(t + ah[2]*dt, xtmp, history);
       xtmp = x + dt * (b5(0) * dxdt + b5(1) * k2 + b5(2) * k3
                        + b5(3) * k4);
       //if (printout) std::cout << "k4: " << xtmp[0] << ", " << xtmp[1] << std::endl;
 
       // k5 step
-      k5 = dX.f(t + ah[3]*dt, xtmp);
+      k5 = dX.f(t + ah[3]*dt, xtmp, history;
       xtmp = x + dt * (b6(0) * dxdt + b6(1) * k2 + b6(2) * k3
                        + b6(3) * k4 + b6(4) * k5);
       //if (printout) std::cout << "k5: " << xtmp[0] << ", " << xtmp[1] << std::endl;
 
       // k6 step and final sum
-      k6 = dX.f(t + ah[4]*dt, xtmp);
+      k6 = dX.f(t + ah[4]*dt, xtmp, history);
       xout = x + dt * (c1 * dxdt + c3 * k3 + c4 * k4
                        + c5 * k5 + c6 * k6);
       //if (printout) std::cout << "k6: " << xout[0] << ", " << xout[1] << std::endl;
@@ -238,7 +232,7 @@ namespace integrators {
       //if (printout) std::cout << "k1: " << xerr[0] << ", " << xerr[1] << std::endl;
 
 
-      dxdt_out = dX.f(t + dt, xout);
+      dxdt_out = dX.f(t + dt, xout, history);
 
       //if (printout) assert(false);
 

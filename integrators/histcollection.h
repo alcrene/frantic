@@ -43,7 +43,7 @@ namespace frantic {
     void update(double t, XVector& x, double val=1.0);
     void set_binning(std::function<std::array<double, 2>(double, size_t)> bin_limit_function, int nbins, BinningMode mode=UNIFORM);
     void reserve(size_t n);
-    void clear();
+    void reset();
 
   private:
     std::vector<double> tValues;

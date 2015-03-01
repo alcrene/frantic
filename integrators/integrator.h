@@ -27,7 +27,7 @@
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/StdVector>
 
-#include "series.h"
+#include "history.h"
 #include "io.h"
 
 /* \todo: Mark appropriate functions as const (get__, for example)
@@ -39,13 +39,11 @@
 using std::vector;
 using namespace::Eigen;
 
-namespace integrators {
-
-  //typedef std::map<std::string, double> Param;  // \todo: Delete. Parameter struct is now defined in problem's Differential class
+namespace frantic {
 
 
   /* XVector should be a class derived from Eigen/Matrix
-   * XSeries is the type of the series for the result variable (mostly, whether interpolated (and with how many points) or not)
+   * XHistory is the type of the series for the result variable (mostly, whether interpolated (and with how many points) or not)
    * \todo: Implement move semantics
    *        Careful not to break references (e.g. txSeries in dX).
    */
@@ -54,25 +52,15 @@ namespace integrators {
   {
   protected:
     using XVector = typename Differential::XVector;
-    using XSeries = typename Differential::XSeries;
+    using XHistory = typename Differential::XHistory;
 
   public:
-    //typedef vector<XVector, aligned_allocator<XVector> > XSeries;
 
-    XSeries odeSeries;
-    XSeries& odeSeriesRef = odeSeries;  // I can't figure out why I need this, but without it, the runnning .cpp
-                                        // complains that "odeSeries isn't accessible within this context".
-    Series<XVector> odeSeriesError;
-    Series<XVector>& odeSeriesErrorRef = odeSeriesError;
+    XHistory history;
 
-    Integrator() : Integrator("x") {}
-    Integrator(std::string varname) : Integrator(varname, varname + "err") {}
-    Integrator(std::string varname, std::string varerrname)
-      : odeSeries(varname), odeSeriesError(varerrname) {
+    Integrator(std::string varname = "x") : history(varname) {
       order = 0;     //Provided for O2scl compatibility
     }
-    // \todo This will require move semantics of XSeries
-    // Integrator(ODEdef& ode, XSeries odeSeries): odeSeries(odeSeries),
     Integrator(const Integrator& source) = delete;
     // We disable the copy constructor because it can lead to problems, notably:
     //      - Copying of large result data sets
@@ -93,57 +81,21 @@ namespace integrators {
     void setRange(double begin, double end, double stepSize, double growFactor=1.0);
     void setRange(double begin, double end, int numSteps, double growFactor=1.0);
     vector<double> getTSeriesVector(int stepMultiplier=0);
-    vector<double> getXSeriesVector(ptrdiff_t component);
-    //vector<double> getXSeriesVector(ptrdiff_t component, XSeries xseries);
+    vector<double> getXHistoryVector(ptrdiff_t component);
+    //vector<double> getXHistoryVector(ptrdiff_t component, XHistory history);
     Series<XVector> evalFunction(std::function<XVector(const double&)> f);
     vector<double> evalFunctionComponent(ptrdiff_t component, std::function<XVector(const double&)> f);
-
 
     // Debugging helpers
     void dump(std::string cmpntName);
 
     // \todo: When Differential class is moved to FRANTIC, use Differential call signature
-    void integrate(frantic::ParameterMap& parameters);                /* This function should always be overloaded by the actual integrator */
-
-
+    void integrate(Differential dX);                /* This function should always be overloaded by the actual integrator */
 
 
   protected:
-    /*vector<double> series_t;    //independent variable of the ODE solution
-          XSeries series_x;   //dependent variable(s) of the ODE solution
-	  //  Not using an Eigen matrix to store these vectors as columns
-	  //  allows the vectors themselves to be matrices, if required.
-	  */
-    double tBegin = 0;
-    double tEnd = 0;                 // functions can check these are set by testing tBegin == tEnd
-    double dt = 0;            // either the step size dt or NumSteps should be computed internally
-    unsigned long nSteps = 0;
     float order; // Integrator order. Also provided for O2scl compatibility (but it should be converted to int)
-    //double initX;                  // If I decide to use this, use 'x0' instead
-    // int XDim;                     // Probably should be removed
-    bool initConditionsSet = false;
-
-//    void discretize();
-//    Functor dX;
-
-    /* Returns true if the passed time 't' is within the specified bounds for the ODE
-     * Must first be initialized with setOdeDoneCondition().
-     */
-    bool odeDone(double t) {
-      return signFlipper * t < signFlipper * tEnd;
-    }
-
-  private:
-    int signFlipper = 1;
-
-    void setOdeDoneCondition() {
-      if (tEnd < tBegin) {
-        signFlipper = -1;  // By multiplying by this, we effectively flip the condition
-                           // from t < tEnd to t > tEnd
-      }
-    }
   };
-
 
 #include "integrator.tpp"
 }

@@ -13,7 +13,7 @@ template <typename XVector> void HistCollection<XVector>::reserve(size_t n) {
   xValues.reserve(n);
 }
 
-template <typename XVector> void HistCollection<XVector>::clear()
+template <typename XVector> void HistCollection<XVector>::reset()
 {
   tValues.clear();
   xValues.clear();

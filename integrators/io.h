@@ -11,6 +11,7 @@
 
 /* Some helper functions for input/output operations
  * \todo: Add possibility to merge two parameter maps (overloaded + ?)
+ * \todo: Redo this entire class using variadic templates instead of boost::variant
  */
 
 namespace frantic
@@ -141,7 +142,9 @@ namespace frantic
       add_parameter(key, parameter);
     }
     void update(const ParameterMap& parameters_to_update) {
+      double tmp;
       for (auto itr=parameters_to_update.cbegin(); itr!=parameters_to_update.cend(); ++itr) {
+        tmp = boost::get<double>(itr->second.value);
         add_parameter(itr->first, itr->second);
       }
     }

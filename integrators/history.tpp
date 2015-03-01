@@ -1,5 +1,5 @@
-#ifndef SERIES_TPP
-#define SERIES_TPP
+#ifndef HISTORY_TPP
+#define HISTORY_TPP
 
 
 
@@ -9,7 +9,7 @@
 
 /*
  */
-template <class XVector> Series<XVector>::Series(std::string varname, size_t cmaxlines) :
+template <typename XVector> Series<XVector>::Series(std::string varname, size_t cmaxlines) :
   o2scl::table<std::vector<double> >(cmaxlines) {
   std::string rowstr;
   rowstr = "t";
@@ -19,8 +19,19 @@ template <class XVector> Series<XVector>::Series(std::string varname, size_t cma
   this->line_of_names(rowstr);
 }
 
-// Overloaded data adding function to allow using the XVector type
-template <class XVector> void Series<XVector>::line_of_data(double t, XVector x) {
+/* Overloaded data adding function to allow using the XVector type
+ */
+template <typename XVector> void Series<XVector>::set(size_t row, double t, const XVector& x) {
+  super::set(0, row, t);
+  for(size_t i=0; i<XVector::SizeAtCompileTime; ++i) {
+    super::set(i+1, row, x(i));
+  }
+}
+
+/* Overloaded data adding function to allow using the XVector type
+ * \todo: reinstate error checking
+ */
+template <typename XVector> void Series<XVector>::line_of_data(double t, XVector& x) {
   // Virtually a copy of void line_of_data() from o2scl/table.h
   if (maxlines==0) inc_maxlines(5);
   if (nlines>=maxlines) inc_maxlines(maxlines);
@@ -32,10 +43,10 @@ template <class XVector> void Series<XVector>::line_of_data(double t, XVector x)
 
   if (nlines<maxlines && XVector::SizeAtCompileTime<=(atree.size())) {
 
-	set_nlines(nlines+1);
-	this->set(0, nlines-1, t);
-	for(size_t i=0; i<XVector::SizeAtCompileTime; ++i) {
-	  this->set(i+1, nlines-1, x(i));
+    set_nlines(nlines+1);
+    super::set(0, nlines-1, t);
+    for(size_t i=0; i<XVector::SizeAtCompileTime; ++i) {
+      super::set(i+1, nlines-1, x(i));
 	}
 
 	return;
@@ -43,6 +54,13 @@ template <class XVector> void Series<XVector>::line_of_data(double t, XVector x)
 
 //  O2SCL_ERR("Not enough lines or columns in line_of_data().",exc_einval);
   return;
+}
+
+/* Return the current state of the system, i.e. the XVector most recently
+ * added to the table
+ */
+template <typename XVector> XVector Series<XVector>::operator ()() const {
+  return getVectorAtTime(nlines);
 }
 
 /* Output the table as plain text. Useful if we want to examine data manually, or
@@ -54,7 +72,7 @@ template <class XVector> void Series<XVector>::line_of_data(double t, XVector x)
  * \todo: Add number before file extension
  * \todo: Add trailing '/' to pathname if necessary
  */
-template <class XVector>
+template <typename XVector>
 void Series<XVector>::dumpToText(const std::string pathname, const std::string filename,
                                  const bool include_labels, const std::string format, const int max_files) {
 
@@ -124,7 +142,7 @@ void Series<XVector>::dumpToText(const std::string pathname, const std::string f
 
 }
 
-template <class XVector> std::array<std::string, 3> Series<XVector>::getFormatStrings(std::string format) {
+template <typename XVector> std::array<std::string, 3> Series<XVector>::getFormatStrings(std::string format) {
   std::array<std::string, 3> formatStrings;
 
   if (format == "org") {
@@ -141,7 +159,7 @@ template <class XVector> std::array<std::string, 3> Series<XVector>::getFormatSt
   return formatStrings;
 }
 
-template <class XVector> typename Series<XVector>::Statistics Series<XVector>::getStatistics() {
+template <typename XVector> typename Series<XVector>::Statistics Series<XVector>::getStatistics() {
 
   Statistics stats;
 
@@ -159,7 +177,7 @@ template <class XVector> typename Series<XVector>::Statistics Series<XVector>::g
   return stats;
 }
 
-template <class XVector> XVector Series<XVector>::getVectorAtTime(const size_t t_idx) const {
+template <typename XVector> XVector Series<XVector>::getVectorAtTime(const size_t t_idx) const {
   static XVector retval;
   for(size_t i=0; i<XVector::SizeAtCompileTime; ++i) {
       retval(i) = get(i+1, t_idx);
@@ -168,11 +186,11 @@ template <class XVector> XVector Series<XVector>::getVectorAtTime(const size_t t
 }
 
 // Convenience overloads
-template <class XVector> double Series<XVector>::max(size_t icol) {
+template <typename XVector> double Series<XVector>::max(size_t icol) {
   return this->max(this->get_column_name(icol));
 }
 
-template <class XVector> double Series<XVector>::min(size_t icol) {
+template <typename XVector> double Series<XVector>::min(size_t icol) {
   return this->min(this->get_column_name(icol));
 }
 
@@ -183,7 +201,7 @@ template <class XVector> double Series<XVector>::min(size_t icol) {
    Python prototype code is in interpolation_prototype.py
    =================================================================== */
 
-template <class XVector, int order, int ip> XVector InterpolatedSeries<XVector, order, ip>::interpolate(double t) const {
+template <typename XVector, int order, int ip> XVector InterpolatedSeries<XVector, order, ip>::interpolate(double t) const {
   //const std::vector<double>& tcol = (*this)[0];
 
   assert(t >= this->get(0,0) and t <= this->get(0,this->get_nlines()-1)); // Ensure we are interpolating within bounds
@@ -229,7 +247,7 @@ template <class XVector, int order, int ip> XVector InterpolatedSeries<XVector, 
          (It used to in this case be able to choose points such that all but
          the first are on same side of interpolated point; I *think* this is fixed now, somewhat overzealously.)
 */
-template <class XVector, int order, int ip> size_t InterpolatedSeries<XVector, order, ip>::getV(double t) const {
+template <typename XVector, int order, int ip> size_t InterpolatedSeries<XVector, order, ip>::getV(double t) const {
   //const std::vector<double>& tcol = (*this)[0];
   static size_t v;    // temporary placeholder: this->v must not be modified
   static size_t m;    // Maximum value to which we have integrated
@@ -273,7 +291,7 @@ template <class XVector, int order, int ip> size_t InterpolatedSeries<XVector, o
  * \todo: Treat the case of no critical point (.begin() == .end())
  * \todo: Make sure distance between points is large enough to interpolate
  */
-template <class XVector, int order, int ip> typename std::array<double, 2> InterpolatedSeries<XVector, order, ip>::getNeighbourCritPoints(double t) const {
+template <typename XVector, int order, int ip> typename std::array<double, 2> InterpolatedSeries<XVector, order, ip>::getNeighbourCritPoints(double t) const {
 
   static std::set<double>::iterator CritPointItr;
   CritPointItr = criticalPoints.upper_bound(t); // Returns first element greater than t, or .end() if none
@@ -312,7 +330,7 @@ template <class XVector, int order, int ip> typename std::array<double, 2> Inter
   return std::array<double, 2>({prevCritPoint, nextCritPoint});
 }
 
-template <class XVector, int order, int ip> void InterpolatedSeries<XVector, order, ip>::getLaplaceCoefficients() const {
+template <typename XVector, int order, int ip> void InterpolatedSeries<XVector, order, ip>::getLaplaceCoefficients() const {
   size_t& v = this->v;
 //  const std::vector<double>& tcol = (*this)[0];
 
@@ -339,7 +357,7 @@ template <class XVector, int order, int ip> void InterpolatedSeries<XVector, ord
   }
 }
 
-template <class XVector, int order, int ip> void InterpolatedSeries<XVector, order, ip>::getNextLaplaceCoefficients() const {
+template <typename XVector, int order, int ip> void InterpolatedSeries<XVector, order, ip>::getNextLaplaceCoefficients() const {
   size_t& v = this->v;
 //  const std::vector<double>& tcol = (*this)[0];
 
@@ -359,7 +377,7 @@ template <class XVector, int order, int ip> void InterpolatedSeries<XVector, ord
  * This function does no checking, so make sure coefficients are properly calculated beforehand.
  * \todo: Any way to implement this using only temporaries, i.e. in one line without the loop ?
  */
-template <class XVector, int order, int ip> XVector InterpolatedSeries<XVector, order, ip>::computePoly(double t) const {
+template <typename XVector, int order, int ip> XVector InterpolatedSeries<XVector, order, ip>::computePoly(double t) const {
 //  const std::vector<double>& tcol = (*this)[0];
 
   XVector b = this->coeff[ip - 1];
@@ -369,5 +387,42 @@ template <class XVector, int order, int ip> XVector InterpolatedSeries<XVector, 
 
   return b;
 }
+
+/* Overloaded set class for critical points (points where the data set isn't smooth enough to interpolate)
+ */
+template <typename XVector, int order, int ip>
+class InterpolatedSeries<XVector, order, ip>::CriticalPointList : public std::set<double>
+{
+public:
+  //      std::vector<double>& series_t;
+  //      std::set<double> critPointList;   // std::set keeps its values ordered; duplicates are discarded
+
+  //    CriticalPointList(std::vector<double>& independent_var_vector) :
+  //      series_t(independent_var_vector){}
+
+  /* Add a critical point and the higher order critical points it induces to the list
+   * 'point' is the t (independant variable) at the point
+   * 'delay' is the value  of the delay (or distance between each successively induced point)
+   * 'max_criticality_order' is the total number of critical points (including the first) induced */
+  void addCriticalPoint(const double point, const double delay, const int max_criticality_order) {
+    for(int i=0; i < max_criticality_order; ++i) {
+      this->insert(point + i*delay);
+    }
+  }
+
+  //      /* Return the critical point with the given index.
+  //         -1 indicates initial value (no critical point below) while -2 (or a value higher than the number of points) indicates final value (no critical point above). */
+  //      NOTE: Don't use front() / back(): back especially can return 0 if nlines != maxlines.
+  //      double operator[](int i) {
+  //        assert(i >= -2);
+  //        if (i == -1) {
+  //          return series_t.front();
+  //        } else if (i == -2 or i >= critPointList.size()) {
+  //          return series_t.back();
+  //        } else {
+  //          return critPointList[i];
+  //        }
+  //      }
+};
 
 #endif
