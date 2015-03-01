@@ -175,7 +175,18 @@ namespace frantic {
     }
 
     void set(size_t row, double t, const XVector& x);
-    // Passed by rvalue reference (std::move or construct in argument)
+
+    /* Set the initial state (either initial value or initial function, if this
+     *   is a delayed system.
+     * \c state should be an instance of a struct providing the operator (). If this
+     * is a delayed system, it should be evaluable from \c t0-r to \c t0, where
+     * \c r is the length of the (longest) delay. If the system is not delayed,
+     * \c state need only be evaluable at \c t0.
+     * \c state can be either a temporary (aka rvalue) (as produced by
+     *   std::make_shared<Struct name>()) or an a shared_ptr that is persistent
+     *   in the caller (i.e. an already declared lvalue we intend to reuse).
+     *   Use of shared_ptr ensures that in both cases memory is properly deallocated.
+     */
     void set_initial_state( std::shared_ptr<InitialState> state) {
       (*state)(0);
       initial_state = std::move(state);
