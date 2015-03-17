@@ -5,21 +5,27 @@
 
 #include <vector>
 #include <assert.h>
+#include <memory>
 
 #include <QWidget>
-#include <QVector>
 #include <QGridLayout>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
 #include <qwt6/qwt_plot.h>
 
+#include "uiparameter.h"
 #include "curve.h"
 #include "histogram.h"
 #include "plot.h"
-#include "../integrators/io.h"
 
 namespace frantic {
+
+  class BoxLayout : public QGridLayout {
+  public:
+    QPushButton* addButton(const QString& label);
+  };
+
 
   /* Manage a tab with plot widgets and input fields
    */
@@ -49,78 +55,6 @@ namespace frantic {
 
   public slots:
 
-  };
-
-//  class ParameterBox : public QGridLayout
-//  {
-//  private:
-//    frantic::ParameterMap parameter_map;
-
-//  public:
-//    struct InputPair {   // Contains pointers to the label and text input box(es?) of one line
-//      QLabel* label;
-//      QLineEdit* box;
-//      InputPair(QLabel* label, QLineEdit* box) : label(label), box(box){}
-//    };
-
-//    ParameterBox () {}
-//    ParameterBox (frantic::ParameterMap);
-//    frantic::ParameterMap get_parameters() {}
-//    frantic::Parameter get_parameter(std::string key);
-
-//    QHash<QString, InputPair > elements;
-//  };
-
-  /* Provides an easy to use layout block for displaying information
-   * in label/info pairs
-   * Insert into a QGridLayout using that layout's addLayout() method
-   */
-  class InfoBox : public QGridLayout
-  {
-  public:
-    // Default constructor is sufficient
-
-    void addInfo(const QString& label, const QString& infoText, const QString& name="");
-    // TODO: overload to allow for mutable information
-    void updateInfo(const QString& name, const QString& infoText);
-    void repaint();
-
-    QHash<QString, QList<QLabel*> > elements;  // Stores referencs to the info elements so they can be later modified
-                                               // label/infoText widget* pairs as indexed by name; if no name is specified, the pair cannot be later retrieved.
-  };
-
-  /* Provides an easy to use layout block for parameter tuning widgets
-   * (label/textbox pairs, sliders (todo), buttons)
-   * \todo: use QList so that order of displayed elements can be controlled
-   */
-  class InputBox : public QGridLayout
-  {
-
-  public:
-    struct InputPair {   // Contains pointers to the label and text input box(es?) of one line
-      QLabel* label;
-      QLineEdit* box;
-      InputPair(QLabel* label, QLineEdit* box) : label(label), box(box){}
-    };
-
-    InputBox(frantic::ParameterMap parameters);
-
-    QLineEdit* addInputLine(const QString& label, const QString& name="",
-                            const QString& default_value="", const bool readonly=false,
-                            const int minWidth=30);
-    QLineEdit* addInputLine(const QList<QString>& labels,
-                            const QList<QString>& names=QList<QString>(), const int minWidth=30);
-    QString getValueString(const QString& name) const;
-    double getValue(const QString& name) const;
-    void setValue(const QString& name, const QString& value);
-    void setValue(const QString& name, const int value);
-    void setValue(const QString& name, const double value);
-    void repaint();
-    frantic::ParameterMap get_parameters() const;
-
-    QPushButton* addButton(const QString& label, const QString& name="");
-
-    QHash<QString, InputPair > elements;
   };
 
 } // End of namespace

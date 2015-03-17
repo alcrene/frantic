@@ -40,7 +40,7 @@ namespace frantic {
     HistCollection(size_t estimated_snapshots=0);
     void dumpToText(const std::string filename, const std::string pathname="",
                     const bool include_labels=true, const std::string format=", ", const int max_files=100);
-    void update(double t, XVector& x, double val=1.0);
+    void update(double t, const XVector& x, double val=1.0);
     void set_binning(std::function<std::array<double, 2>(double, size_t)> bin_limit_function, int nbins, BinningMode mode=UNIFORM);
     void reserve(size_t n);
     void reset();

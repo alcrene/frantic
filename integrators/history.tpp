@@ -31,7 +31,7 @@ template <typename XVector> void Series<XVector>::set(size_t row, double t, cons
 /* Overloaded data adding function to allow using the XVector type
  * \todo: reinstate error checking
  */
-template <typename XVector> void Series<XVector>::line_of_data(double t, XVector& x) {
+template <typename XVector> void Series<XVector>::line_of_data(double t, const XVector& x) {
   // Virtually a copy of void line_of_data() from o2scl/table.h
   if (maxlines==0) inc_maxlines(5);
   if (nlines>=maxlines) inc_maxlines(maxlines);

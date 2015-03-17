@@ -191,8 +191,8 @@ namespace frantic {
       initial_state = std::move(state);
       set(0, t0, (*initial_state)(t0)); // The integrator expects the first row to be set
     }
-    void line_of_data(double t, XVector& x);  // overloaded data adding function to allow using the XVector type
-    void update(double t, XVector& x) { line_of_data(t, x); }  // alias for common interface. Might want to check http://stackoverflow.com/questions/3053561/how-do-i-assign-an-alias-to-a-function-name-in-c
+    void line_of_data(double t, const XVector& x);  // overloaded data adding function to allow using the XVector type
+    void update(double t, const XVector& x) { line_of_data(t, x); }  // alias for common interface. Might want to check http://stackoverflow.com/questions/3053561/how-do-i-assign-an-alias-to-a-function-name-in-c
     
     XVector operator ()() const; // Return the current state vector
     XVector getVectorAtTime(const size_t t_idx) const;

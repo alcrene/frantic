@@ -31,10 +31,10 @@ namespace integrators {
     /* Overloaded integrate function which initializes creates a local dX total derivative from the specified parameters
        **** BUGY **** : x0 is not set this way, which will almost always be a problem
      */
-    void integrate(const frantic::ParameterMap& parameters) {
-      std::cerr << "This call to 'integrate' is buggy. Please use another or, if you need this one, fix it." << std::endl;
-      integrate(Differential(parameters));
-    }
+//    void integrate(const frantic::ParameterMap& parameters) {
+//      std::cerr << "This call to 'integrate' is buggy. Please use another or, if you need this one, fix it." << std::endl;
+//      integrate(Differential(parameters));
+//    }
 
     /* Given a total derivative functor dX, integrate the DE problem.
      * To have the function create a functor from parameters, use the alternate constructor

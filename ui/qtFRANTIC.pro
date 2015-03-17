@@ -16,6 +16,7 @@ SOURCES += tab.cpp \
     curve.cpp \
     plot.cpp \
     histogram.cpp \
+#    uiparameter.cpp
 
 
 
@@ -23,7 +24,8 @@ HEADERS += tab.h \
     curve.h \
     plot.h \
     histogram.h \
-    qtfrantic.h
+    qtfrantic.h \
+    uiparameter.h
 
 # O2scl library
 

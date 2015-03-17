@@ -23,10 +23,10 @@ HEADERS += \
     euler_sttic.h \
     rkf45_gsl.h \
     histcollection.h \
-    io.h \
     integrator.h \
     stochastic.h \
-    history.h
+    history.h \
+    io.h
 
 # O2scl library
 

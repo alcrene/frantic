@@ -48,7 +48,7 @@ void HistCollection<XVector>::set_binning(std::function<std::array<double, 2>(do
    * If 'val' is specified, increment by the value of val; otherwise by 1.
    * \todo: Deal with over/underflow bins
    */
-template <typename XVector> void HistCollection<XVector>::update(double t, XVector& x, double val) {
+template <typename XVector> void HistCollection<XVector>::update(double t, const XVector& x, double val) {
   size_t t_idx = find_t_idx(t);
   assert(t_idx < tValues.size() + 1);   // We don't deal with cases where t should be added to the begining (i.e. going backwards in time)
 
