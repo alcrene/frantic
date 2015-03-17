@@ -218,7 +218,7 @@ namespace frantic {
     template <typename T>
     T get(const std::string& key) {
       if (param.key == key) {
-        return param.value;
+        return param.get();
       } else if (!params.empty){
         return params.get<T>(key);
       } else {
@@ -241,7 +241,7 @@ namespace frantic {
     }
 
     void print() {
-      std::cout << param.display_str << " : " << param.value << std::endl;
+      std::cout << param.display_str << " : " << param.get() << std::endl;
       if (!params.empty) {
         params.print();
       }
