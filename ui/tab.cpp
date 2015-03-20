@@ -65,4 +65,21 @@ namespace frantic {
     return button;
   }
 
+  /****************************************
+   * QtWindow functions
+   */
+
+  void QtWindow::slot0() {
+    slot0_function();
+  }
+  void QtWindow::slot1() {
+    slot1_function();
+  }
+  void QtWindow::slot2() {
+    slot2_function();
+  }
+  void QtWindow::slot3() {
+    slot3_function();
+  }
+
 } // End of namespace

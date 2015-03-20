@@ -64,23 +64,22 @@ template <typename XVector> XVector Series<XVector>::operator ()() const {
 }
 
 /* Output the table as plain text. Useful if we want to examine data manually, or
- * to import into another programme that cannot read HDF files.
+ * to import into another programme that cannot read a binary format.
  * File is saved as 'filename' in the current project directory.
- * To save in another directory, specify a value for 'pathname'.
+ * To save in the current directory, pass an empty string to 'directory'.
  * If the filename exists or cannot be opened, it is appended with a number and retried;
  * this proceded is repeated until file is successfully opened or 'max_files' is reached.
  * \todo: Add number before file extension
- * \todo: Add trailing '/' to pathname if necessary
+ * \todo: Add trailing '/' to directory if necessary
  */
 template <typename XVector>
-void Series<XVector>::dumpToText(const std::string pathname, const std::string filename,
-                                 const bool include_labels, const std::string format, const int max_files) {
-
-  std::string outfilename = frantic::get_free_filename(pathname, filename, max_files);  // Returns "" if unsuccessful
+void Series<XVector>::dump_to_text_t::operator() (const std::string& directory,
+                                                  const std::string& filename) {
+  std::string outfilename = frantic::get_free_filename(directory, filename, max_files);  // Returns "" if unsuccessful
 
   if (outfilename != "") {
     // Succesfully found a free filename
-//    outfile.close();
+    //    outfile.close();
     std::fstream outfile(outfilename.c_str(), std::ios::out);
 
     std::array<std::string, 3> formatStrings = getFormatStrings(format);
@@ -107,12 +106,12 @@ void Series<XVector>::dumpToText(const std::string pathname, const std::string f
     if (include_labels) {
       std::string line = headChar;
       std::string sepline = headChar;
-      for(size_t i=0; i<this->get_ncolumns() - 1; ++i) {
-        line = line + this->get_column_name(i) + sepChar;
-        sepline = sepline + std::string(this->get_column_name(i).length(), '-') + "-+";
+      for(size_t i=0; i<object->get_ncolumns() - 1; ++i) {
+        line = line + object->get_column_name(i) + sepChar;
+        sepline = sepline + std::string(object->get_column_name(i).length(), '-') + "-+";
       }
-      line = line + this->get_column_name(this->get_ncolumns() - 1) + tailChar; // Don't put a sep character for last column
-      sepline = sepline + std::string(this->get_column_name(this->get_ncolumns() - 1).length(), '-') + tailChar;
+      line = line + object->get_column_name(object->get_ncolumns() - 1) + tailChar; // Don't put a sep character for last column
+      sepline = sepline + std::string(object->get_column_name(object->get_ncolumns() - 1).length(), '-') + tailChar;
 
       if (format == "org") {
         outfile << sepline << std::endl;
@@ -123,22 +122,21 @@ void Series<XVector>::dumpToText(const std::string pathname, const std::string f
       }
     }
 
-    for(size_t i=0; i<this->get_nlines(); ++i) {
-        outfile << headChar;
-        for(size_t j=0; j < this->get_ncolumns() - 1; ++j) {
-            outfile << this->get(j,i) << sepChar;
-        }
-        outfile << this->get(this->get_ncolumns() - 1, i) << tailChar;  // Don't put a sep character for last column
-        outfile << std::endl;
+    for(size_t i=0; i<object->get_nlines(); ++i) {
+      outfile << headChar;
+      for(size_t j=0; j < object->get_ncolumns() - 1; ++j) {
+        outfile << object->get(j,i) << sepChar;
+      }
+      outfile << object->get(object->get_ncolumns() - 1, i) << tailChar;  // Don't put a sep character for last column
+      outfile << std::endl;
     }
 
     outfile.close();
 
     std::cout << "Series written to \n" + outfilename + "\n";
   } else {
-      std::cerr << "Unable to open a file to export series data" << std::endl;
+    std::cerr << "Unable to open a file to export series data" << std::endl;
   }
-
 
 }
 

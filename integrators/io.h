@@ -12,8 +12,8 @@
 namespace frantic
 {
 
-  std::string get_free_filename(std::string filename, std::string directory="",
-                                const int max_files=100);
+  std::string get_free_filename(const std::string& directory, const std::string& filename="",
+                                int max_files=100);
 
   /* \todo: Make all but value a template parameter ?
    *        Would allow to define in typedef, shortening construction statement

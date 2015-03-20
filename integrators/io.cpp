@@ -9,11 +9,11 @@
  */
 namespace frantic
 {
-  std::string get_free_filename(std::string directory, std::string filename,
-                                const int max_files)
+  std::string get_free_filename(const std::string& directory, const std::string& filename,
+                                int max_files)
   {
-    directory = directory + "/";
-    std::string outfilename = directory + filename;
+    std::string basename = directory + "/";  // todo: don't add if it's already there
+    std::string outfilename = basename + filename;
 
     std::fstream outfile(outfilename, std::ios::in);
 
@@ -21,7 +21,7 @@ namespace frantic
       // File exists; try appending numbers to find non-existing one
       for(int i=1; i<= max_files; ++i) {
         outfile.close();
-        outfilename = directory + filename + "_" + std::to_string(i);
+        outfilename = basename + filename + "_" + std::to_string(i);
         outfile.open(outfilename, std::ios::in);
         if (!outfile.is_open()) {
           break;

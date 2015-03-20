@@ -107,13 +107,22 @@ namespace frantic {
       if (this->tn == this->t0 or this->dt == 0 or this->nSteps == 0) {initialized = false;}
       return initialized;
     }
-  };
+
+    struct SaveHistory
+    {
+      // Implementations should include an 'object' pointer pointing to the containing object
+      std::string name;  // This string used by UI to identify related elements (both internally and visually)
+      bool include_labels;
+      std::string format;
+      int max_files;
+
+      virtual void operator() (const std::string& directory, const std::string& filename) = 0;
+    };
+
+  }; // History
 
   /* Specialized class for tables containing series data
    * (i.e. nD dependent vector (x) vs 1D independent variable (t))
-   * Uses Laplace/Hermite interpolation to permit efficient look-back; interpolation
-   * is optimised specifically for repeated sequential calls, as is the case
-   * with differential equation integrators.
    *
    * \todo: Implement move semantics constructor
    * \todo: Implement rvalue copy assignment with move semantics
@@ -196,9 +205,25 @@ namespace frantic {
     
     XVector operator ()() const; // Return the current state vector
     XVector getVectorAtTime(const size_t t_idx) const;
-    void dumpToText(const std::string filename, const std::string pathname="",
-                    const bool include_labels=true, const std::string format=", ", const int max_files=100);
-    
+
+    struct dump_to_text_t : public SaveHistory {
+      Series<XVector>* object;
+      dump_to_text_t(Series<XVector>* containing_object,
+                     const std::string& name = "series", bool include_labels = true,
+                     const std::string& format = ", ", int max_files = 100) {
+        object = containing_object; // We need a reference to the object instance
+        this->name = name;
+        this->include_labels = include_labels,
+        this->format = format;
+        this->max_files = max_files;
+      }
+      virtual void operator() (const std::string& directory, const std::string& filename);
+    };
+    dump_to_text_t dump_to_text(const std::string& name = "series", bool include_labels = true,
+                                const std::string& format = ", ", int max_files = 100) {
+      return dump_to_text_t(this, name, include_labels, format, max_files);
+    }
+
     Statistics getStatistics();
     void reset(bool reset_range=false) {
       clear_data(); // Reset all data in order to restart a new computation
@@ -209,10 +234,10 @@ namespace frantic {
     double min(size_t icol); using o2scl::table<std::vector<double> >::min;
     
   protected:
-    std::array<std::string, 3> getFormatStrings(std::string format);
+    static std::array<std::string, 3> getFormatStrings(std::string format);
     std::shared_ptr<InitialState> initial_state;
     
-  };
+  }; // End Series
 
   
   /* ======================================================================
@@ -221,6 +246,11 @@ namespace frantic {
        'order' is the (min) interpolation order, 'ip' the number of nodes used for interpolation
        'order' is mostly used to add the correct number number of associated critical points;
        in a DE scheme, it should be at least as large as the order of the integrator.
+
+       Uses Laplace/Hermite interpolation to permit efficient look-back; interpolation
+       is optimised specifically for repeated sequential calls, as is the case
+       with differential equation integrators.
+
        \todo: Do we need to use special Eigen STL allocator for coeff ?
        \todo: Allow prehistory to be defined by series, not just function
        \todo: Deal with initial times different than 0 ?
@@ -295,7 +325,7 @@ namespace frantic {
     XVector computePoly(double t) const;
     
 
-  };
+  }; // End InterpolatedSeries
 
 
   /* ======================================================================
@@ -306,7 +336,7 @@ namespace frantic {
        be added at some point.
      ====================================================================== */
   template <typename XVector>
-  class ProbabilityDensity : public HistCollection<XVector>, public virtual History
+  class ProbabilityDensity : public HistCollection<XVector>, virtual History
   {
   public:
     ProbabilityDensity(size_t estimated_snapshots=0)
@@ -314,6 +344,25 @@ namespace frantic {
     void reset(bool reset_range=false) {
       HistCollection<XVector>::reset();
       History::reset(reset_range);
+    }
+    struct dump_to_text_t : public SaveHistory {
+      ProbabilityDensity<XVector>* object;
+      dump_to_text_t(ProbabilityDensity<XVector>* containing_object,
+                     const std::string& name = "series", bool include_labels = true,
+                     const std::string& format = ", ", int max_files = 100) {
+        object = containing_object;
+        this->name = name;
+        this->include_labels = include_labels,
+        this->format = format;
+        this->max_files = max_files;
+      }
+      virtual void operator() (const std::string& directory, const std::string& filename) {
+        object->HistCollection<XVector>::dump_to_text(directory, filename, include_labels, format, max_files);
+      }
+    };
+    dump_to_text_t dump_to_text(const std::string& name = "series", bool include_labels = true,
+                                const std::string& format = ", ", int max_files = 100) {
+      return dump_to_text_t(this, name, include_labels, format, max_files);
     }
   };
 

@@ -130,14 +130,15 @@ void HistCollection<XVector>::set_bin_edges(o2scl::hist& hist, double t, size_t 
    * \todo: allow to specify what labels to include by flags; e.g. per row or per block bin edges
    */
 template <typename XVector>
-void HistCollection<XVector>::dumpToText(const std::string pathname, const std::string filename,
-                                         const bool include_labels, const std::string format, const int max_files) {
-
-  std::string outfilename = frantic::get_free_filename(pathname, filename, max_files);  // Returns "" if unsuccessful
+void HistCollection<XVector>::dump_to_text(const std::string& directory,
+                                           const std::string& filename,
+                                           bool include_labels,
+                                           const std::string& format, int max_files) {
+  std::string outfilename = frantic::get_free_filename(directory, filename, max_files);  // Returns "" if unsuccessful
 
   if (outfilename != "") {
     // Succesfully found a free filename
-//    outfile.close();
+    //    outfile.close();
     std::fstream outfile(outfilename.c_str(), std::ios::out);
 
     std::array<std::string, 3> formatStrings = getFormatStrings(format);
