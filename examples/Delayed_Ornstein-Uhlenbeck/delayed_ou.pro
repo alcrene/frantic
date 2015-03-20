@@ -8,50 +8,42 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = langevin
+TARGET = delayed_ou
 TEMPLATE = app
 
 DEFINES += O2SCL_CPP11
 
 INCLUDEPATH += /usr/include/qwt            # header files
-DEPENDPATH += /usr/lib                     # libraries
 
 
-
-SOURCES += main.cpp\
-    langevin.cpp \
+SOURCES +=\
+    delayed_ou.cpp
 
 
 HEADERS += \
-    langevin.h \
-
-
-#CXXFLAGS += "c++11"
-# GCC flag; check for other compilers if required
+    delayed_ou.h \
+    ou_process.h \
+    standardwindow.h
 
 QMAKE_CXXFLAGS += -std=gnu++0x
 # This might be a gcc only flag
+#CONFIG(release, debug|release): QMAKE_CXXFLAG += -g -O2
 
 win32:CONFIG(release, debug|release): LIBS += -L/usr/lib/ -lqwt
 else:win32:CONFIG(debug, debug|release): LIBS += -L/usr/lib/ -lqwtd
 else:unix: LIBS += -L/usr/lib/ -lqwt
 
-# CENT library
-INCLUDEPATH += /home/alex/code/c++/cent
-DEPENDPATH += /home/alex/local/lib
+LIBS += -L/home/alex/usr/local/lib
+LIBS += -L/home/alex/usr/local/lib64
 
+# FRANTIC library
+INCLUDEPATH += /home/alex/code/c++/frantic    # header files
+DEPENDPATH += /home/alex/code/c++/frantic     # Recompile when headers here change
+#LIBS += -L/home/alex/code/c++/frantic           # Add to linker path
 
-unix:!macx: LIBS += -L/home/alex/local/lib -lCENT -lqtCENT
-#unix:!macx: LIBS += -lCENT
+CONFIG(release, debug|release): LIBS += -lFRANTIC -lqtFRANTIC
+else:CONFIG(debug, debug|release): LIBS += -lFRANTIC-debug -lqtFRANTIC-debug
 
 # O2scl library
 
 LIBS += -lo2scl
-
-# CLHEP library components
-
-#INCLUDEPATH += /home/alex/local/include
-#DEPENDPATH += /home/alex/local/lib
-#DEPENDPATH += /home/alex/local/lib64
-
-#unix:!macx: LIBS += -L/home/alex/local/lib64 -lCLHEP-Random-2.1.4.1
