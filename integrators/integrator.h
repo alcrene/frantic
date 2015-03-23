@@ -83,8 +83,8 @@ namespace frantic {
     vector<double> getTSeriesVector(int stepMultiplier=0);
     vector<double> getXHistoryVector(ptrdiff_t component);
     //vector<double> getXHistoryVector(ptrdiff_t component, XHistory history);
-    Series<XVector> evalFunction(std::function<XVector(const double&)> f);
-    vector<double> evalFunctionComponent(ptrdiff_t component, std::function<XVector(const double&)> f);
+    Series<XVector> eval_function(std::function<XVector(const double&)> f);
+    vector<double> eval_function_component(ptrdiff_t component, std::function<XVector(const double&)> f);
 
     // Debugging helpers
     void dump(std::string cmpntName);

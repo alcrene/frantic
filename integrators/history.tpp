@@ -291,40 +291,49 @@ template <typename XVector, int order, int ip> size_t InterpolatedSeries<XVector
  */
 template <typename XVector, int order, int ip> typename std::array<double, 2> InterpolatedSeries<XVector, order, ip>::getNeighbourCritPoints(double t) const {
 
-  static std::set<double>::iterator CritPointItr;
-  CritPointItr = criticalPoints.upper_bound(t); // Returns first element greater than t, or .end() if none
-//  this->neighbourCritPointItr[0] = std::prev(this->neighbourCritPointItr[1]);
-  // We shouldn't need to check for getting critical point beyond current t, because that's what the 'm' does in getV()
-
-
-  assert(*(std::prev(CritPointItr)) != t );
-  assert(CritPointItr != criticalPoints.begin());   // The initial point should always be a critical point for DDEs, and if we are evaluating at it *exactly*, we don't need to interpolate.
-
-
-  // \todo Would something like the code below be more efficient, since we expect in general to only go to the next critical point ?
-//  if (this->critPoints(this->neighbourCritPointIdxs[1]) < t) {
-//	while (this->critPoints(this->neighbourCritPointIdxs[1]) < t) {
-//	  ++(this->neighbourCritPointIdxs[1]);
-//	}
-//  } else if (this->critPoints(this->neighbourCritPointIdxs[0]) > t) {
-//	while (this->critPoints(this->neighbourCritPointIdxs[0]) > t) {
-//	  --(this->neighbourCritPointIdxs[0]);
-//	}
-//  }
-
   static double nextCritPoint, prevCritPoint;
-  // \todo: Avoid creating array by having the member already existing in Series
-  if (CritPointItr == criticalPoints.end()) {
+
+  if (critical_points.size() == 0) {
+    // There are no critical points, so just return the begin and end times
     nextCritPoint = this->get(0, this->get_nlines()-1);
+    prevCritPoint = this->get(0,0);
   } else {
-    nextCritPoint = *CritPointItr;
-  }
-  CritPointItr--;
-  if (CritPointItr == criticalPoints.begin()) {
+
+    static std::set<double>::iterator CritPointItr;
+    CritPointItr = critical_points.upper_bound(t); // Returns first element greater than t, or .end() if none
+    //  this->neighbourCritPointItr[0] = std::prev(this->neighbourCritPointItr[1]);
+    // We shouldn't need to check for getting critical point beyond current t, because that's what the 'm' does in getV()
+
+
+    assert(*(std::prev(CritPointItr)) != t );
+    assert(CritPointItr != critical_points.begin());   // The initial point should always be a critical point for DDEs, and if we are evaluating at it *exactly*, we don't need to interpolate.
+
+
+    // \todo Would something like the code below be more efficient, since we expect in general to only go to the next critical point ?
+    //  if (this->critPoints(this->neighbourCritPointIdxs[1]) < t) {
+    //	while (this->critPoints(this->neighbourCritPointIdxs[1]) < t) {
+    //	  ++(this->neighbourCritPointIdxs[1]);
+    //	}
+    //  } else if (this->critPoints(this->neighbourCritPointIdxs[0]) > t) {
+    //	while (this->critPoints(this->neighbourCritPointIdxs[0]) > t) {
+    //	  --(this->neighbourCritPointIdxs[0]);
+    //	}
+    //  }
+
+    // \todo: Avoid creating array by having the member already existing in Series
+    if (CritPointItr == critical_points.end()) {
+      nextCritPoint = this->get(0, this->get_nlines()-1);
+    } else {
+      nextCritPoint = *CritPointItr;
+    }
+    CritPointItr--;
+    if (CritPointItr == critical_points.begin()) {
       prevCritPoint = this->get(0,0);
     } else {
       prevCritPoint = *CritPointItr;
     }
+  }
+
   return std::array<double, 2>({prevCritPoint, nextCritPoint});
 }
 
@@ -386,41 +395,15 @@ template <typename XVector, int order, int ip> XVector InterpolatedSeries<XVecto
   return b;
 }
 
-/* Overloaded set class for critical points (points where the data set isn't smooth enough to interpolate)
- */
+/* Add a critical point and the higher order critical points it induces to the list
+ * 'point' is the t (independant variable) at the point
+ * 'delay' is the value  of the delay (or distance between each successively induced point)
+ * 'max_criticality_order' is the total number of critical points (including the first) induced */
 template <typename XVector, int order, int ip>
-class InterpolatedSeries<XVector, order, ip>::CriticalPointList : public std::set<double>
-{
-public:
-  //      std::vector<double>& series_t;
-  //      std::set<double> critPointList;   // std::set keeps its values ordered; duplicates are discarded
-
-  //    CriticalPointList(std::vector<double>& independent_var_vector) :
-  //      series_t(independent_var_vector){}
-
-  /* Add a critical point and the higher order critical points it induces to the list
-   * 'point' is the t (independant variable) at the point
-   * 'delay' is the value  of the delay (or distance between each successively induced point)
-   * 'max_criticality_order' is the total number of critical points (including the first) induced */
-  void addCriticalPoint(const double point, const double delay, const int max_criticality_order) {
-    for(int i=0; i < max_criticality_order; ++i) {
-      this->insert(point + i*delay);
-    }
+void InterpolatedSeries<XVector, order, ip>::add_critical_point(const double point, const double delay, const int max_criticality_order) {
+  for(int i=0; i < max_criticality_order; ++i) {
+    critical_points.insert(point + i*delay);
   }
-
-  //      /* Return the critical point with the given index.
-  //         -1 indicates initial value (no critical point below) while -2 (or a value higher than the number of points) indicates final value (no critical point above). */
-  //      NOTE: Don't use front() / back(): back especially can return 0 if nlines != maxlines.
-  //      double operator[](int i) {
-  //        assert(i >= -2);
-  //        if (i == -1) {
-  //          return series_t.front();
-  //        } else if (i == -2 or i >= critPointList.size()) {
-  //          return series_t.back();
-  //        } else {
-  //          return critPointList[i];
-  //        }
-  //      }
-};
+}
 
 #endif
