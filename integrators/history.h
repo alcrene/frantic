@@ -148,7 +148,7 @@ namespace frantic {
   class Series : public o2scl::table<std::vector<double> >, public virtual History
   {
   private:
-    typedef o2scl::table<std::vector<double> > super;
+    using super = o2scl::table<std::vector<double> >;
 
   public:
 
@@ -165,17 +165,13 @@ namespace frantic {
       long nsteps;
     };
 
-    /* An initial state is simply a class providing the () operator to evaluate
-     * it over its domain.
-     * \todo: include domain variable (or just tr, with t0 deduced from History)
-     */
-//    struct InitialState {
-//      virtual ~InitialState() {}
-//      virtual XVector operator()(double t) const = 0;
-//    };
-
-    Series(std::string varname="x", size_t cmaxlines=0);
+    Series(const std::string& varname="x", size_t cmaxlines=0);
     Series(const Series& source) = delete;
+    Series(const Series&& source)
+      : super(source)  // \todo: check that this is implemented with move semantics
+    {
+      initial_state = std::move(source.initial_state);
+    }
 
     virtual bool check_initialized() {
       bool retval = true;
@@ -251,6 +247,21 @@ namespace frantic {
       History::reset(reset_range);  // Also reset t0, tn if reset_range == true
     }
     
+    template <typename XXVector>  // The result of the function could have a different vector type
+    Series<XXVector> eval_function(std::function<XXVector(double, XVector)> f) const {
+      Series<XXVector> result("x", get_nlines());
+      XVector cur_x;
+
+      for(size_t irow=0; irow < get_nlines(); ++irow) {
+        for(size_t icol=0; icol < XVector::SizeAtCompileTime; ++icol) {
+          cur_x(icol) = get(icol + 1, irow);
+        }
+        result.line_of_data(get(0, irow), f(get(0, irow), cur_x));
+      }
+
+      return std::move(result);
+    }
+
     double max(size_t icol); using o2scl::table<std::vector<double> >::max;
     double min(size_t icol); using o2scl::table<std::vector<double> >::min;
     

@@ -26,11 +26,11 @@ namespace frantic {
               const std::string display_str, const T& value, const bool modifiable=true)
       : Parameter<T>(key, display_str, value, modifiable) { }
 
-    virtual T get () {
+    virtual T get () const {
       return super::value;
     }
     void set(const QString& string) {return ;}  // Defined in specializations below
-    QString get_QString() {return QString("");}            // Defined in specializations below
+    QString get_QString() const {return QString("");}            // Defined in specializations below
 
     void attach(QGridLayout* layout) {
       assert(false);  // Should never be called;
@@ -66,23 +66,23 @@ namespace frantic {
 
   // \todo: Compactify this with SFINAE
   template <>
-  inline QString UIParameter<int>::get_QString() {
+  inline QString UIParameter<int>::get_QString() const {
     return QString::number(super::value);
   }
   template <>
-  inline QString UIParameter<long>::get_QString() {
+  inline QString UIParameter<long>::get_QString() const {
     return QString::number(super::value);
   }
   template <>
-  inline QString UIParameter<unsigned long>::get_QString() {
+  inline QString UIParameter<unsigned long>::get_QString() const {
     return QString::number(super::value);
   }
   template <>
-  inline QString UIParameter<double>::get_QString() {
+  inline QString UIParameter<double>::get_QString() const {
     return QString::number(super::value);
   }
   template <>
-  inline QString UIParameter<std::string>::get_QString() {
+  inline QString UIParameter<std::string>::get_QString() const {
     return QString::fromUtf8(super::value.c_str());
   }
 
@@ -117,6 +117,7 @@ namespace frantic {
     InfoUIParameter& operator= (const T new_value) {
       value = new_value;
       contentWidget->setText(super::get_QString());
+      return *this;
     }
 
     virtual void repaint() {
@@ -172,6 +173,7 @@ namespace frantic {
     InputUIParameter& operator= (const T new_value) {
       value = new_value;
       contentWidget->setText(super::get_QString());
+      return *this;
     }
 
   };
@@ -216,7 +218,7 @@ namespace frantic {
     }
 
     template <typename T>
-    T get(const std::string& key) {
+    T get(const std::string& key) {  // Can't be const because some parameters refresh in their get function
       if (param.key == key) {
         return param.get();
       } else if (!params.empty){

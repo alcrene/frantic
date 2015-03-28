@@ -41,34 +41,6 @@ template <class Differential> vector<double> Integrator<Differential>::getXHisto
     return history[component + 1];
 }
 
-/* Evaluate a function over the integrator's timesteps
- * \todo: use getTSeries to allow eval over a finer set of points
- */
-template <class Differential> Series<typename Differential::XVector>
-Integrator<Differential>::eval_function(std::function<XVector(const double&)> f) {
-	Series<double> result(history.get_nlines());
-
-	for(auto t_iter=history[0].begin(); t_iter != history.end(); ++t_iter) {
-	result.line_of_data(*t_iter, f(*t_iter));
-  }
-  
-  return result;
-}
-
-/* Return an std::vector for the time series of a function, evaluated at the same points as the solving algorithm
- * \todo: use getTSeries to allow eval over a finer set of points
- */
-template <class Differential> vector<double> Integrator<Differential>::eval_function_component(ptrdiff_t component, std::function<XVector(const double&)> f) {
-  std::vector<XVector, Eigen::aligned_allocator<XVector> > result;
-
-  result.reserve(history.size());
-  for(auto t_iter=history[0].begin(); t_iter != history.end(); ++t_iter) {
-        result.push_back(f(*t_iter));
-  }
-
-  return result;
-}
-
 /* Reset the state data. In particular, this clears the series table
  */
 template <class Differential> void

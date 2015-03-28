@@ -9,7 +9,7 @@
 
 /*
  */
-template <typename XVector> Series<XVector>::Series(std::string varname, size_t cmaxlines) :
+template <typename XVector> Series<XVector>::Series(const std::string& varname, size_t cmaxlines) :
   o2scl::table<std::vector<double> >(cmaxlines) {
   std::string rowstr;
   rowstr = "t";
