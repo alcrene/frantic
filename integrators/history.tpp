@@ -1,7 +1,8 @@
 #ifndef HISTORY_TPP
 #define HISTORY_TPP
 
-
+// \todo: Use of SizeAtCompileTime prohibits variable length vectors, which can be useful for evaluating functions
+//        But we don't want to lose the compiler optimizations for lookups during simulation
 
 /* --------------------------------------------------------------------------
  * Series class
@@ -202,12 +203,16 @@ template <typename XVector> double Series<XVector>::min(size_t icol) {
 template <typename XVector, int order, int ip> XVector InterpolatedSeries<XVector, order, ip>::interpolate(double t) const {
   //const std::vector<double>& tcol = (*this)[0];
 
+  // There's sometimes some offset between the actual series bounds and the requested ones, which can result in the assertion failing
+  if ((this->get(0,0) - super::dt <= t) and (t <= this->get(0,0))) { t = this->get(0,0); }
+  if ((this->get(0,this->get_nlines()-1) <= t) and  (t <= this->get(0,this->get_nlines()-1) + super::dt)) { t = this->get(0,this->get_nlines()-1); }
   assert(t >= this->get(0,0) and t <= this->get(0,this->get_nlines()-1)); // Ensure we are interpolating within bounds
 
   size_t t_found_idx;
   if (t == 0) {
     // If we set delay at 0, "t" column is filled with zeros and ordered_lookup fails for t=0. This hackishly circumvents that
     // \todo: Make a cleaner solution
+    // \todo: FIXME!! Wrong if t[0] is not 0, e.g. for initial state. Currently only "ok" because we use constant initial function
     t_found_idx = 0;
   } else {
     // \todo: Might be a gain in speed if this is written from scratch (see docs), especially if we start from current position
