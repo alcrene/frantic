@@ -399,7 +399,7 @@ namespace frantic {
     struct dump_to_text_t : public SaveHistory {
       ProbabilityDensity<XVector>* object;
       dump_to_text_t(ProbabilityDensity<XVector>* containing_object,
-                     const std::string& name = "series", bool include_labels = true,
+                     const std::string& name = "density", bool include_labels = true,
                      const std::string& format = ", ", int max_files = 100) {
         object = containing_object;
         this->name = name;
@@ -411,7 +411,7 @@ namespace frantic {
         object->HistCollection<XVector>::dump_to_text(directory, filename, include_labels, format, max_files);
       }
     };
-    dump_to_text_t dump_to_text(const std::string& name = "series", bool include_labels = true,
+    dump_to_text_t dump_to_text(const std::string& name = "density", bool include_labels = true,
                                 const std::string& format = ", ", int max_files = 100) {
       return dump_to_text_t(this, name, include_labels, format, max_files);
     }
