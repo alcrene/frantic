@@ -58,9 +58,7 @@ namespace frantic {
       // Don't do anything here that shouldn't be done twice (diamond inheritance)
     }
 
-    /* Reserve memory for the result series table;
-     *   for adaptive time step algorithms, this is only an estimation.
-     * Set begin, end and step size; the number of steps is calculated
+    /* Set begin, end and step size; the number of steps is calculated
      * If stepSize does not fit an integer number of times in the interval,
      *   it is reduced slightly.
      * Calculated number of steps is multiplied by 'growFactor', allowing to reserve
@@ -88,9 +86,7 @@ namespace frantic {
       }
     }
 
-    /* Reserve memory for the result series table;
-     *   for adaptive time step algorithms, this is only an estimation.
-     * Set begin, end and number of steps; the step size is calculated
+    /* Set begin, end and number of steps; the step size is calculated
      * Calculated number of steps is multiplied by 'growFactor', allowing to reserve
      *   extra memory; useful if it is known that an adaptive stepper will add steps
      * If begin == end, the series will have exactly one row
@@ -131,6 +127,12 @@ namespace frantic {
     };
 
   }; // History
+
+
+
+  /*==============================================================================================*/
+
+
 
   /* Specialized class for tables containing series data
    * (i.e. nD dependent vector (x) vs 1D independent variable (t))
@@ -273,6 +275,11 @@ namespace frantic {
   }; // End Series
 
   
+
+  /*==============================================================================================*/
+
+
+
   /* ======================================================================
        Series with local interpolation
        This class tacitly assumes that we are dealing with delayed DE series data
@@ -377,6 +384,11 @@ namespace frantic {
     std::shared_ptr<InterpolatedSeries<XVector, order, ip> > initial_state;
 
   }; // End InterpolatedSeries
+
+
+
+  /*==============================================================================================*/
+
 
 
   /* ======================================================================
