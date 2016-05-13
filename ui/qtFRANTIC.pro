@@ -27,6 +27,10 @@ HEADERS += tab.h \
     qtfrantic.h \
     uiparameter.h
 
+INCLUDEPATH += /usr/include/qt4/QtGui
+LIBS += -L/home/rene/usr/lib   # The .o files in /build need to be able to find libqtFRANTIC
+#INCLUDEPATH += /usr/include/qt4/
+
 # O2scl library
 
 LIBS += -lo2scl

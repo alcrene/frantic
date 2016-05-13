@@ -180,6 +180,9 @@ namespace frantic {
       if (nlines == 0) {
         std::cerr << "Call set_initial_state() before integrating : first row of series table must be pre-filled.";
         retval = false;
+      } else if (nlines > 1) {
+        std::cerr << "The integration is already running.";
+        retval = false;
       } else {
         retval = History::check_initialized();
       }
@@ -223,7 +226,9 @@ namespace frantic {
     void update(double t, const XVector& x) { line_of_data(t, x); }  // alias for common interface. Might want to check http://stackoverflow.com/questions/3053561/how-do-i-assign-an-alias-to-a-function-name-in-c
     
     XVector operator ()() const; // Return the current state vector
+    XVector operator ()(const double t) const; // Shorthand for getVectorAtTime(t)
     XVector getVectorAtTime(const size_t t_idx) const;
+    XVector getVectorAtTime(const double t_idx) const;
 
     struct dump_to_text_t : public SaveHistory {
       Series<XVector>* object;
@@ -284,7 +289,7 @@ namespace frantic {
        Series with local interpolation
        This class tacitly assumes that we are dealing with delayed DE series data
        'order' is the (min) interpolation order, 'ip' the number of nodes used for interpolation
-       'order' is mostly used to add the correct number number of associated critical points;
+       'order' is mostly used to add the correct number of associated critical points;
        in a DE scheme, it should be at least as large as the order of the integrator.
 
        Uses Laplace/Hermite interpolation to permit efficient look-back; interpolation

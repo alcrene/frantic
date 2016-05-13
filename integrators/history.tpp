@@ -64,6 +64,12 @@ template <typename XVector> XVector Series<XVector>::operator ()() const {
   return getVectorAtTime(nlines);
 }
 
+/* Shorthand for getting state vector at time t
+ */
+template <typename XVector> XVector Series<XVector>::operator ()(const double t) const {
+  return getVectorAtTime(t);
+}
+
 /* Output the table as plain text. Useful if we want to examine data manually, or
  * to import into another programme that cannot read a binary format.
  * File is saved as 'filename' in the current project directory.
@@ -182,6 +188,40 @@ template <typename XVector> XVector Series<XVector>::getVectorAtTime(const size_
       retval(i) = get(i+1, t_idx);
   };
   return retval;
+}
+
+/* Convenience function that searches the history for a time 't' and returns the corresponding vector.
+ * IMPORTANT: 't' must be _exactly_ equal to value in the series -- no interpolation is performed.
+ * If you need interpolation, use the InterpolatedSeries class.
+ */
+template <typename XVector> XVector Series<XVector>::getVectorAtTime(const double t) const {
+    bool failed = false;
+
+    if (nlines < 2) {
+        // ordered lookup needs at least 2 rows
+        if (nlines == 0) {
+            std::cerr << "Attempted to query an empty series !" << std::endl;
+            assert(false);
+        } else {
+            if (this->get(0, 0) == t) {
+                return this->getVectorAtTime(static_cast<size_t>(0));
+            } else {
+                failed = true;
+            }
+        }
+    }
+    size_t t_found_idx = this->ordered_lookup("t", t);  // ordered_lookup returns the closest index --
+    if (this->get(0, t_found_idx) == t) {
+      return this->getVectorAtTime(t_found_idx);
+    } else {
+      failed = true;
+    }
+
+    if (failed) {
+      std::cerr << "You attempted to read series data at time " << t << ", which does not correspond to any time point." << std::endl;
+      std::cerr << "If you need interpolation between time points, use the InterpolatedSeries class." << std::endl;
+      assert(false);
+    }
 }
 
 // Convenience overloads

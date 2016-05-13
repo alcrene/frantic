@@ -7,13 +7,13 @@
 #include <assert.h>
 #include <memory>
 
-#include <QWidget>
-#include <QMainWindow>
-#include <QGridLayout>
-#include <QLabel>
-#include <QLineEdit>
-#include <QPushButton>
-#include <qwt6/qwt_plot.h>
+#include <QtGui/QWidget>
+#include <QtGui/QMainWindow>
+#include <QtGui/QGridLayout>
+#include <QtGui/QLabel>
+#include <QtGui/QLineEdit>
+#include <QtGui/QPushButton>
+#include <qwt/qwt_plot.h>
 
 #include "curve.h"
 #include "histogram.h"
