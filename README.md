@@ -11,9 +11,11 @@ If you need to integrate differential equations, and would like to do so in C++,
 
 ### Dependencies ###
 
-This library makes liberal use of the excellent O2scl package (http://o2scl.sourceforge.net/), which itself is based on the Gnu Scientific Librairy (GSL, http://www.gnu.org/software/gsl/gsl.html). Those are hard dependencies.
+This library makes liberal use of the excellent O2scl package (http://o2scl.sourceforge.net/), which itself is based on the Gnu Scientific Librairy (GSL, http://www.gnu.org/software/gsl/gsl.html). It also requires Eigen3 (https://eigen.tuxfamily.org/). Those are hard dependencies.
 
-For the GUI building capabilities, Qt 4 is also needed.
+On Linux Eigen can usually be installed through the package manager. I have found the GSL and O2scl easiest to install by downloading .tar file for their latest release. If you try to install by cloning their git/bitbucket repositories and run into trouble, try using the .tar file instead.
+
+For the GUI building capabilities, Qt 4 and Qwt6 are also needed.
 
 ### Getting started ###
 

@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>         // for text-number conversions
 #include <string>
 #include <assert.h>
 #include <vector>
@@ -13,6 +14,7 @@
 
 #include "o2scl/table.h"
 #include "histcollection.h"
+#include "io.h"
 
 namespace frantic {
   
@@ -91,7 +93,7 @@ namespace frantic {
      *   extra memory; useful if it is known that an adaptive stepper will add steps
      * If begin == end, the series will have exactly one row
      */
-    void set_range(double begin, double end, int numSteps) {
+    void set_range(double begin, double end, long numSteps) {
 
       t0 = begin;
       tn = end;
@@ -248,6 +250,9 @@ namespace frantic {
       return dump_to_text_t(this, name, include_labels, format, max_files);
     }
 
+    void read_from_text(const std::string& directory, const std::string& filename,
+                        const std::string& format = ", ");
+
     Statistics getStatistics();
     void reset(bool reset_range=false) {
       clear_data(); // Reset all data in order to restart a new computation
@@ -349,6 +354,8 @@ namespace frantic {
      */
     XVector operator () (double t) const {
       if (t < History::t0) {
+        // Time precedes our current history ->
+        assert(initial_state != NULL);   // A failure here might indicate that the initial_state tries to call it's own initial_state
         return (*initial_state)(t);  // Should fail if initial_state isn't initialized
       } else {
         return this->interpolate(t);
@@ -386,7 +393,7 @@ namespace frantic {
     XVector computePoly(double t) const;
 
   protected:
-    std::shared_ptr<InterpolatedSeries<XVector, order, ip> > initial_state;
+    std::shared_ptr<InterpolatedSeries<XVector, order, ip> > initial_state = NULL;
 
   }; // End InterpolatedSeries
 

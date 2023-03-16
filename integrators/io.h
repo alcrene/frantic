@@ -2,18 +2,21 @@
 #define NEWIO_H
 
 #include <iostream>
-#include <string>
 #include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
 #include <memory>
 #include <Eigen/Dense>
-
-#include "io.h"
 
 namespace frantic
 {
 
   std::string get_free_filename(const std::string& directory, const std::string& filename="",
                                 int max_files=100);
+  // Following two functions from http://stackoverflow.com/a/236803
+  std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems);
+  std::vector<std::string> split(const std::string &s, char delim);
 
   /* \todo: Make all but value a template parameter ?
    *        Would allow to define in typedef, shortening construction statement

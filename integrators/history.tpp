@@ -140,9 +140,61 @@ void Series<XVector>::dump_to_text_t::operator() (const std::string& directory,
 
     outfile.close();
 
-    std::cout << "Series written to \n" + outfilename + "\n";
+    std::cout << "Series written to" << std::endl << outfilename << std::endl;
   } else {
-    std::cerr << "Unable to open a file to export series data" << std::endl;
+    std::cerr << "Unable to open a file to export series data." << std::endl;
+  }
+
+}
+
+template <typename XVector>
+void Series<XVector>::read_from_text(const std::string& directory, const std::string& filename,
+                                     const std::string& format)
+{
+  // \tood: format parameter currently ignored, due to issue in split
+  // \todo: see http://stackoverflow.com/questions/9371238/why-is-reading-lines-from-stdin-much-slower-in-c-than-python?rq=1  ?
+
+  std::string basename = directory + "/";  // \todo: don't add if it's already there
+  std::string infilename = basename + filename;
+
+  std::ifstream infile(infilename.c_str());
+
+  if (!infile.is_open()) {
+    std::cerr << "Couldn't find file " << infilename << "." << std::endl;
+
+  } else {
+    reset(true);   // True indicates to also reset the range
+
+    std::string line;
+    std::stringstream sstream;
+    double t;
+    XVector datavec;
+    std::vector<std::string> linetokens;
+    // \todo: make this work with the different output formats
+    while (std::getline(infile, line)) {
+       if (line.size() && line[0] != '#') {
+         // Line is not a comment; try to parse it into the expected number of tokens
+         linetokens.clear();
+         frantic::split(line, ' ', linetokens);  // \FIXME: Hardcoded token delimiter !!!!!!
+         if (linetokens.size() == XVector::SizeAtCompileTime + 1) {
+           // Line has the expected number of tokens; assume it's properly formatted
+           for(size_t i=0; i < XVector::SizeAtCompileTime; ++i) {
+             sstream.clear();
+             sstream << linetokens[i+1];       // We don't use stod here because it is locale dependent
+             sstream >> datavec[i];
+             //datavec[i] << linetokens[i+1];
+           }
+           sstream.clear();
+           sstream << linetokens[0];           // Same comment as above
+           sstream >> t;
+           line_of_data(t, datavec);
+         }
+       }
+    }
+    set_range(get(0,0), get(0, get_nlines()-1), (long) get_nlines());  // Reset the range based on the data. Type specified to avoid ambiguous overload
+    // \todo: check that step size is consistent with data
+
+    infile.close();
   }
 
 }
